@@ -1,12 +1,12 @@
 fs = require 'fs'
 events = require 'events'
+mongoose = require 'mongoose'
 database = require './database'
-
 
 # create the model for users and expose it to our app
 userModel = database.userModel
-logModel = rdatabase.logModel
-sessionModel = rdatabase.sessionModel
+logModel = database.logModel
+sessionModel = database.sessionModel
 
 
 class LogHarvester
@@ -118,5 +118,5 @@ class LogHarvester
         @activeSessions[id].received = Number(words[9])
       if words[6] is 'interface'
         @activeSessions[id].interface = words[7]
-
+          
 module.exports.LogHarvester = LogHarvester
