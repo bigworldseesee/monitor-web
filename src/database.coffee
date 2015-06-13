@@ -4,8 +4,8 @@ mongoose = require 'mongoose'
 
 userSchema = mongoose.Schema(
   email : String
-  previous_sessions : Array
-  current_sessions: Array
+  closed_sessions : [String]
+  active_sessions: [String]
 )
 
 logSchema = mongoose.Schema(
@@ -14,6 +14,7 @@ logSchema = mongoose.Schema(
 )
 
 sessionSchema = mongoose.Schema(
+  username: String
   id: String
   ip: String
   child: String
@@ -23,9 +24,15 @@ sessionSchema = mongoose.Schema(
   received: Number
   sent: Number
   interface: String
-)  
+)
+
+dauSchema = mongoose.Schema(
+  ymd: String
+  username: [String]
+)
 
 # create the model for users and expose it to our app
 module.exports.userModel = mongoose.model('userModel', userSchema)
 module.exports.logModel = mongoose.model('logModel', logSchema)
 module.exports.sessionModel = mongoose.model('sessionModel', sessionSchema)
+module.exports.dauModel = mongoose.model('dauModel', dauSchema)
