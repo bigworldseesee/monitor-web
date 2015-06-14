@@ -16,6 +16,11 @@ class FileWatcher extends events.EventEmitter
         watcher.close()
         @emit 'change'
 
+sleep = (time) ->
+  stop = new Date().getTime()
+  while new Date().getTime() < stop + time
+    ->
 
 module.exports.TimeStamp = TimeStamp
 module.exports.FileWatcher = FileWatcher
+module.exports.sleep = sleep

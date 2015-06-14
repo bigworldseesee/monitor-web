@@ -1,14 +1,13 @@
-
+fs = require 'fs'
 mongoose = require 'mongoose'
 harvester = require './harvester'
 util = require './util'
 
+logPath = './res/mock.log'
+
 mongoose.connect 'mongodb://localhost/bwss-monitor'
 
-
-logPath = './res/syslog'
-
-coolFarmer = new harvester.Harvester(logPath)
+coolFarmer = new harvester.Harvester(logPath, true)
 lazyPoliceman = new util.FileWatcher(logPath)
 
 

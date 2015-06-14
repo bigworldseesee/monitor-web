@@ -19,7 +19,7 @@ activeSession = {}
 # combines the log from `last` to form the session information
 class Harvester extends events.EventEmitter
 
-  constructor: (@logPath) ->
+  constructor: (@logPath, @istest=false) ->
     Syslog.findOne {'name': @logPath},  (err, syslog) =>
       throw err if err
       if not syslog
@@ -27,7 +27,7 @@ class Harvester extends events.EventEmitter
         syslog.path = @logPath
         syslog.checkedSize = 0
       @_syslog = syslog
-      # @prevSize = syslog.checkedSize
+      # @prevSize = @_syslog.checkedSize
       @prevSize = 0
       syslog.save (err) =>
         throw err if err
@@ -48,6 +48,9 @@ class Harvester extends events.EventEmitter
     rstream.on 'end', =>
       lines = data.split "\n"
       @process line for line in lines
+      if @istest
+        util.sleep 3000
+        console.log lines 
       @_syslog.prevSize = @prevSize
       @_syslog.save (err) =>
         throw err if err
