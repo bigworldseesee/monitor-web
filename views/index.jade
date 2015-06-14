@@ -13,7 +13,9 @@ block content
     -var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
     -var m = monthNames[date.getMonth()];
     -var y = date.getFullYear();
-    -return d+' '+m+' '+y;
+    -var h = date.getHours();
+    -var min = date.getMinutes();
+    -return d+' '+m+' '+y+' '+h+':'+min;
   -}
 
   h1= title
@@ -22,5 +24,6 @@ block content
     each session in sessions
       li
         | #{prettyDate(session.start)}
-        b -----
-        | #{sprintf(format, session.duration)} 分钟
+        | ----- #{sprintf(format, session.duration)} 分钟
+        | ----- sent #{sprintf(format, session.sent)} Mb
+        | ----- received #{sprintf(format, session.received)} Mb
