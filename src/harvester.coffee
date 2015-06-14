@@ -66,7 +66,7 @@ class Harvester extends events.EventEmitter
     return if bracketPos is -1
     procName = proc[0..bracketPos-1]
     id = proc[bracketPos+1...-2]
-    @_processPPTP words, id if procName is 'pptpd'
+    # @_processPPTP words, id if procName is 'pptpd'
     @_processPPP words, id if procName is 'pppd'
 
 
@@ -105,16 +105,35 @@ class Harvester extends events.EventEmitter
 
 
   _processPPP: (words, id) ->
+
+    timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
     if not activeSession[id]
-        activeSession[id] = new Session
-        activeSession[id].id = id
-    if words[5] is 'Sent' and words[8] is 'received'
+      activeSession[id] = new Session
+      activeSession[id].id = id
+
+    if words[5] is 'Plugin'
+      activeSession[id].start = timestamp.toDate()
+
+    else if words[6] is 'interface'
+        activeSession[id].interface = words[7]
+
+    else if words[5] is 'peer' and words[6] is 'from'
+      activeSession[id].ip = words[9]
+
+    else if words[5] is 'remote' and words[6] is 'IP'
+      @_setUsernameMock id, timestamp # This is a async function
+
+    else if words[5] is 'Sent' and words[8] is 'received'
       activeSession[id].sent = Number(words[6]) / 1024 / 1024
       activeSession[id].received = Number(words[9]) / 1024 / 1024
-    if words[6] is 'interface'
-      activeSession[id].interface = words[7]
-    if words[4] is 'Exit.'
-      delete activeSession[child]
+
+    else if words[5] is 'Exit.'
+      activeSession[id].end = timestamp.toDate()
+      if activeSession[id].end and activeSession[id].start
+        activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
+      activeSession[id].save (err) =>
+        throw err if err
+        delete activeSession[id]
 
 
   _setUsername: (id, timestamp) ->
