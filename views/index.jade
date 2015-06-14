@@ -1,0 +1,26 @@
+extends layout
+
+block content
+
+  form(name="input", method="post", action="/showinfo")
+    | username:
+    input(type="text", name="username")
+
+    input(type="submit", value="Submit")
+
+  -function prettyDate(date){
+    -var d = date.getDate();
+    -var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+    -var m = monthNames[date.getMonth()];
+    -var y = date.getFullYear();
+    -return d+' '+m+' '+y;
+  -}
+
+  h1= title
+  h2= username
+  if sessions
+    each session in sessions
+      li
+        | #{prettyDate(session.start)}
+        b -----
+        | #{sprintf(format, session.duration)} 分钟
