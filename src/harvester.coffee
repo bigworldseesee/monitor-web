@@ -82,7 +82,7 @@ class Harvester extends events.EventEmitter
       activeSession[id].start = timestamp.toDate()
       activeSession[id].ip = words[7]
       setTimeout =>
-        @_setUsernameMock id, timestamp
+        @_setUsername id, timestamp
       , 1000
 
     if words[9] is 'connection' and words[10] is 'finished'
@@ -117,15 +117,15 @@ class Harvester extends events.EventEmitter
       delete activeSession[child]
 
 
-  _setUsername: (id, timestamp, mode='realtime') ->
+  _setUsername: (id, timestamp) ->
     year = timestamp.year
     month = timestamp.month
     day = timestamp.day
     time = timestamp.time
 
-    if mode is 'realtime'
+    if new Date() - timestamp.toDate() > 50000 # If the syslog and current time larger than 5 seconds
       command = spawn('last', ['-10'])
-    else if mode is 'repair'
+    else
       command = spawn('last')
 
     data = ''

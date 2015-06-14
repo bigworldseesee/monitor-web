@@ -6,7 +6,7 @@ util = require './util'
 mongoose.connect 'mongodb://localhost/bwss-monitor'
 
 
-logPath = './res/syslog'
+logPath = '/var/log/syslog'
 
 coolFarmer = new harvester.Harvester(logPath)
 lazyPoliceman = new util.FileWatcher(logPath)
