@@ -14,7 +14,6 @@ SyslogSchema = Schema (
 SessionSchema = Schema (
   username: String
   id: String
-  child: String
   interface: String
   ip: String
   start: Date
