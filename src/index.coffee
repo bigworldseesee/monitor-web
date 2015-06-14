@@ -15,7 +15,7 @@ router.get '/', (req, res) ->
         valid_sessions.push session
         break if valid_sessions.length is 50
     res.render 'index',
-      title : 'All users fnformation'
+      title : 'All users\' Information'
       sessions : valid_sessions
 
 
