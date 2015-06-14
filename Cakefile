@@ -14,4 +14,5 @@ task 'compile', "Compiles CoffeeScript src/*.coffee to lib/*.js", ->
     console.log stdout + stderr if stdout + stderr
     fs.renameSync('lib/app.js', 'app.js')
     fs.renameSync('lib/index.js', 'routes/index.js')
+    fs.renameSync('lib/user.js', 'routes/user.js')
   

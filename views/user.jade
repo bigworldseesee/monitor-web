@@ -19,12 +19,11 @@ block content
   -}
 
   h1= title
-  h2 Only show 50 entries
-  if sessions
+  if sessions[0]
+    h2= sessions[0].username
     each session in sessions
-      p
-        b #{session.username}
-        | ----- #{prettyDate(session.start)}
+      li
+        | #{prettyDate(session.start)}
         | ----- #{sprintf(format, session.duration)} 分钟
         | ----- sent #{sprintf(format, session.sent)} Mb
         | ----- received #{sprintf(format, session.received)} Mb

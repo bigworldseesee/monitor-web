@@ -1,20 +1,22 @@
 # index.coffee
+express = require 'express'
 mongoose = require 'mongoose'
 db = require '../lib/db'
 
-
+router = express.Router()
 Session = db.Session
 
-
-exports.index = (req, res) ->
-  res.render 'index',
-    title : 'User Information'
-
-
-exports.showinfo = (req, res) ->
-  Session.find {'username': req.body.username}, (err, sessions) =>
+router.get '/', (req, res) ->
+  Session.find {}, (err, sessions) =>
     console.log err if err
+    valid_sessions = []
+    for session in sessions
+      if session.username
+        valid_sessions.push session
+        break if valid_sessions.length is 50
     res.render 'index',
-      username: req.body.username
-      title : 'User Information'
-      sessions : sessions
+      title : 'All users fnformation'
+      sessions : valid_sessions
+
+
+module.exports = router
