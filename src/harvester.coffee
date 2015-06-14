@@ -118,6 +118,11 @@ class Harvester extends events.EventEmitter
 
 
   _setUsername: (id, timestamp, mode='realtime') ->
+    year = timestamp.year
+    month = timestamp.month
+    day = timestamp.day
+    time = timestamp.time
+
     if mode is 'realtime'
       command = spawn('last', ['-10'])
     else if mode is 'repair'
@@ -126,7 +131,7 @@ class Harvester extends events.EventEmitter
     data = ''
     command.stdout.on 'data', (chunk) =>
       data += chunk
-    last_command.on 'close', =>
+    command.on 'close', =>
       records = data.split "\n"
       if activeSession[id]
         for record in records
@@ -134,9 +139,8 @@ class Harvester extends events.EventEmitter
           if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
             activeSession[id].username = words[0]
       else
-        Session.findOne {'id': @id},  (err, session) =>
+        Session.findOne {'id': id},  (err, session) =>
           throw err if err
-          throw id + ' not found' if not session
           for record in records
             words = record.split(/[ ]+/)
             if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
@@ -162,7 +166,6 @@ class Harvester extends events.EventEmitter
         for record in records
           words = record.split(/[ ]+/)
           if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-            console.log 'save to active sessions'
             activeSession[id].username = words[0]
       else
         Session.findOne {'id': id},  (err, session) =>
@@ -172,7 +175,6 @@ class Harvester extends events.EventEmitter
             if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
               session.username = words[0]
               session.save (err) =>
-                console.log 'save to db'
                 throw err if err
 
 
