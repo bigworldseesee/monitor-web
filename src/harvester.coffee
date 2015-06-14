@@ -66,42 +66,7 @@ class Harvester extends events.EventEmitter
     return if bracketPos is -1
     procName = proc[0..bracketPos-1]
     id = proc[bracketPos+1...-2]
-    # @_processPPTP words, id if procName is 'pptpd'
     @_processPPP words, id if procName is 'pppd'
-
-
-  _processPPTP: (words, id) ->
-    timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
-
-    # The current session is not finished, so it should reside in |activeSession|
-    if not activeSession[id]
-      activeSession[id] = new Session
-      activeSession[id].id = id
-
-    if words[9] is 'connection' and words[10] is 'started'
-      activeSession[id].start = timestamp.toDate()
-      activeSession[id].ip = words[7]
-      setTimeout =>
-        @_setUsername id, timestamp
-      , 3000
-
-    if words[9] is 'connection' and words[10] is 'finished'
-      activeSession[id].end = timestamp.toDate()
-      activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
-      child = activeSession[id].child
-      if child isnt '0'
-        activeSession[id].sent = activeSession[child].sent
-        activeSession[id].received = activeSession[child].received
-        activeSession[id].interface = activeSession[child].interface
-      activeSession[id].save (err) =>
-        throw err if err
-        delete activeSession[id]
-    
-    if words[7] is 'child'
-      # Grab child session ID
-      bracketPos = words[8].indexOf('[')
-      child = words[8][bracketPos+1...-1]
-      activeSession[id].child = child
 
 
   _processPPP: (words, id) ->
@@ -121,7 +86,7 @@ class Harvester extends events.EventEmitter
       activeSession[id].ip = words[9]
 
     else if words[5] is 'remote' and words[6] is 'IP'
-      @_setUsernameMock id, timestamp # This is a async function
+      @_setUsername id, timestamp # This is a async function
 
     else if words[5] is 'Sent' and words[8] is 'received'
       activeSession[id].sent = Number(words[6]) / 1024 / 1024
