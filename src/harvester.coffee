@@ -83,7 +83,7 @@ class Harvester extends events.EventEmitter
       activeSession[id].ip = words[7]
       setTimeout =>
         @_setUsername id, timestamp
-      , 1000
+      , 3000
 
     if words[9] is 'connection' and words[10] is 'finished'
       activeSession[id].end = timestamp.toDate()
@@ -122,11 +122,11 @@ class Harvester extends events.EventEmitter
     month = timestamp.month
     day = timestamp.day
     time = timestamp.time
-
-    if new Date() - timestamp.toDate() > 50000 # If the syslog and current time larger than 5 seconds
-      command = spawn('last', ['-10'])
+    currDate = new Date()
+    if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
+      command = spawn('last', ['-w', '-5'])
     else
-      command = spawn('last')
+      command = spawn('last', ['-w'])
 
     data = ''
     command.stdout.on 'data', (chunk) =>
