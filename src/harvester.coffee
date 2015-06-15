@@ -32,7 +32,13 @@ class Harvester extends events.EventEmitter
       syslog.save (err) =>
         throw err if err
       # Setup done, ready to harvest
-      @emit 'ready'
+      command = spawn('last', ['-w'])
+      data = ''
+      command.stdout.on 'data', (chunk) =>
+        data += chunk
+      command.on 'close', =>
+        fs.writeFileSync('./last.txt', 'w');
+        @emit 'ready'
 
 
   harvest: ->
@@ -54,7 +60,7 @@ class Harvester extends events.EventEmitter
       @_syslog.prevSize = @prevSize
       @_syslog.save (err) =>
         throw err if err
-      # Current log processing complete, notify the world.  
+      # Current log processing complete, notify the world.
       @emit 'finish'
 
 
@@ -70,7 +76,6 @@ class Harvester extends events.EventEmitter
 
 
   _processPPP: (words, id) ->
-
     timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
     if not activeSession[id]
       activeSession[id] = new Session
@@ -86,7 +91,7 @@ class Harvester extends events.EventEmitter
       activeSession[id].ip = words[9]
 
     else if words[5] is 'remote' and words[6] is 'IP'
-      @_setUsername id, timestamp # This is a async function
+      @_setUsernameWrapper id, timestamp # This is a async function
 
     else if words[5] is 'Sent' and words[8] is 'received'
       activeSession[id].sent = Number(words[6]) / 1024 / 1024
@@ -100,37 +105,44 @@ class Harvester extends events.EventEmitter
         throw err if err
         delete activeSession[id]
 
-
-  _setUsername: (id, timestamp) ->
+  _setUsername: (data, timestamp) ->
     year = timestamp.year
     month = timestamp.month
     day = timestamp.day
     time = timestamp.time
-    currDate = new Date()
-    if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
-      command = spawn('last', ['-w', '-5'])
+    records = data.split "\n"
+    if activeSession[id]
+      for record in records
+        words = record.split(/[ ]+/)
+        if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
+          activeSession[id].username = words[0]
     else
-      command = spawn('last', ['-w'])
-
-    data = ''
-    command.stdout.on 'data', (chunk) =>
-      data += chunk
-    command.on 'close', =>
-      records = data.split "\n"
-      if activeSession[id]
+      Session.findOne {'id': id},  (err, session) =>
+        throw err if err
         for record in records
           words = record.split(/[ ]+/)
-          if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-            activeSession[id].username = words[0]
-      else
-        Session.findOne {'id': id},  (err, session) =>
-          throw err if err
-          for record in records
-            words = record.split(/[ ]+/)
-            if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-              session.username = words[0] 
-              session.save (err) =>
-                throw err if err
+          if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
+            session.username = words[0]
+            session.save (err) =>
+              throw err if err
+
+  _setUsernameWrapper: (id, timestamp) ->
+    currDate = new Date()
+    if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
+      command = spawn('last', ['-w', '-10'])
+      data = ''
+      command.stdout.on 'data', (chunk) =>
+        data += chunk
+      command.on 'close', =>
+        _setUsername data, timestamp
+    else
+      rstream = fs.createReadStream './last.txt',
+        encoding: 'utf8'
+      data = ''
+      rstream.on 'data', (chunk) =>
+        data += chunk
+      rstream.on 'end', =>
+        _setUsername data, timestamp
 
 
   _setUsernameMock: (id, timestamp, mode='realtime') ->
