@@ -20,11 +20,21 @@ block content
 
   h1= title
   h2 Only show 50 entries
+  
   if sessions
-    each session in sessions
-      p
-        b #{session.username}
-        | ----- #{prettyDate(session.start)}
-        | ----- #{sprintf(format, session.duration)} 分钟
-        | ----- sent #{sprintf(format, session.sent)} Mb
-        | ----- received #{sprintf(format, session.received)} Mb
+    table(border=1)
+      tr
+        th Username
+        th Start
+        th Duration (分钟)
+        th Sent （Mb)
+        th Received (Mb)
+      - each session in sessions
+        tr
+          td(style='width: '+(50/2)+'%').
+            #{session.username}
+          td(style='width: '+(60/2)+'%').
+            #{prettyDate(session.start)}
+          td #{sprintf(format, session.duration)}
+          td #{sprintf(format, session.sent)}
+          td #{sprintf(format, session.received)}
