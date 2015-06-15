@@ -14,6 +14,7 @@ TimeStamp = util.TimeStamp
 activeSession = {}
 # (TODO) Fix: if the server restarts, some active sessions could be lost.
 
+MAX_SAVE = 10
 
 # Havester collects the changes from syslog and
 # combines the log from `last` to form the session information
@@ -42,6 +43,8 @@ class Harvester extends events.EventEmitter
 
 
   harvest: ->
+    @num_saving = 0
+    @pause = false
     @currSize = fs.statSync(@logPath).size
     rstream = fs.createReadStream @logPath,
       encoding: 'utf8'
@@ -65,14 +68,19 @@ class Harvester extends events.EventEmitter
 
 
   process: (line) ->
-    words = line.split(/[ ]+/)
-    proc = words[4]
-    return if not proc
-    bracketPos = proc.indexOf('[')
-    return if bracketPos is -1
-    procName = proc[0..bracketPos-1]
-    id = proc[bracketPos+1...-2]
-    @_processPPP words, id if procName is 'pppd'
+    if @pause
+      setTimeout =>
+        @process line
+      , 500
+    else
+      words = line.split(/[ ]+/)
+      proc = words[4]
+      return if not proc
+      bracketPos = proc.indexOf('[')
+      return if bracketPos is -1
+      procName = proc[0..bracketPos-1]
+      id = proc[bracketPos+1...-2]
+      @_processPPP words, id if procName is 'pppd'
 
 
   _processPPP: (words, id) ->
@@ -82,6 +90,7 @@ class Harvester extends events.EventEmitter
       activeSession[id].id = id
 
     if words[5] is 'Plugin'
+      console.log 'process ppp ' + id
       activeSession[id].start = timestamp.toDate()
 
     else if words[6] is 'interface'
@@ -91,7 +100,7 @@ class Harvester extends events.EventEmitter
       activeSession[id].ip = words[9]
 
     else if words[5] is 'remote' and words[6] is 'IP'
-      @_setUsernameWrapper id, timestamp # This is a async function
+      @_setUsername id, timestamp # This is a async function
 
     else if words[5] is 'Sent' and words[8] is 'received'
       activeSession[id].sent = Number(words[6]) / 1024 / 1024
@@ -101,11 +110,19 @@ class Harvester extends events.EventEmitter
       activeSession[id].end = timestamp.toDate()
       if activeSession[id].end and activeSession[id].start
         activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
+      @num_saving += 1
+      if @num_saving >= MAX_SAVE
+        @pause = true
       activeSession[id].save (err) =>
         throw err if err
+        console.log 'session saved ' + id
+        @num_saving -= 1
+        if @num_saving < MAX_SAVE
+          @pause = false
         delete activeSession[id]
 
-  _setUsername: (id, data, timestamp) ->
+
+  _setUsernameCore: (id, data, timestamp) ->
     year = timestamp.year
     month = timestamp.month
     day = timestamp.day
@@ -123,10 +140,16 @@ class Harvester extends events.EventEmitter
           words = record.split(/[ ]+/)
           if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
             session.username = words[0]
+            @num_saving += 1
+            if @num_saving >= MAX_SAVE
+              @pause = true
             session.save (err) =>
               throw err if err
+              @num_saving -= 1
+              if @num_saving < MAX_SAVE
+                @pause = false
 
-  _setUsernameWrapper: (id, timestamp) ->
+  _setUsername: (id, timestamp) ->
     currDate = new Date()
     if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
       command = spawn('last', ['-w', '-10'])
@@ -134,7 +157,7 @@ class Harvester extends events.EventEmitter
       command.stdout.on 'data', (chunk) =>
         data += chunk
       command.on 'close', =>
-        @_setUsername id, data, timestamp
+        @_setUsernameCore id, data, timestamp
     else
       rstream = fs.createReadStream './last.txt',
         encoding: 'utf8'
@@ -142,7 +165,7 @@ class Harvester extends events.EventEmitter
       rstream.on 'data', (chunk) =>
         data += chunk
       rstream.on 'end', =>
-        @_setUsername id, data, timestamp
+        @_setUsernameCore id, data, timestamp
 
 
   _setUsernameMock: (id, timestamp, mode='realtime') ->
