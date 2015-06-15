@@ -14,7 +14,7 @@ TimeStamp = util.TimeStamp
 activeSession = {}
 # (TODO) Fix: if the server restarts, some active sessions could be lost.
 
-MAX_SAVE = 10
+MAX_SAVE = 100
 
 # Havester collects the changes from syslog and
 # combines the log from `last` to form the session information
@@ -68,58 +68,59 @@ class Harvester extends events.EventEmitter
 
 
   process: (line) ->
-    if @pause
-      setTimeout =>
-        @process line
-      , 500
-    else
-      words = line.split(/[ ]+/)
-      proc = words[4]
-      return if not proc
-      bracketPos = proc.indexOf('[')
-      return if bracketPos is -1
-      procName = proc[0..bracketPos-1]
-      id = proc[bracketPos+1...-2]
-      @_processPPP words, id if procName is 'pppd'
+    words = line.split(/[ ]+/)
+    proc = words[4]
+    return if not proc
+    bracketPos = proc.indexOf('[')
+    return if bracketPos is -1
+    procName = proc[0..bracketPos-1]
+    id = proc[bracketPos+1...-2]
+    @_processPPP words, id if procName is 'pppd'
 
 
   _processPPP: (words, id) ->
-    timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
-    if not activeSession[id]
-      activeSession[id] = new Session
-      activeSession[id].id = id
+    if @pause
+      setTimeout =>
+        console.log 'timeout done ' + id
+        @_processPPP words, id
+      , 3000
+    else
+      console.log 'not timeout ' + id
+      timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
+      if not activeSession[id]
+        activeSession[id] = new Session
+        activeSession[id].id = id
 
-    if words[5] is 'Plugin'
-      console.log 'process ppp ' + id
-      activeSession[id].start = timestamp.toDate()
+      if words[5] is 'Plugin'
+        activeSession[id].start = timestamp.toDate()
 
-    else if words[6] is 'interface'
-        activeSession[id].interface = words[7]
+      else if words[6] is 'interface'
+          activeSession[id].interface = words[7]
 
-    else if words[5] is 'peer' and words[6] is 'from'
-      activeSession[id].ip = words[9]
+      else if words[5] is 'peer' and words[6] is 'from'
+        activeSession[id].ip = words[9]
 
-    else if words[5] is 'remote' and words[6] is 'IP'
-      @_setUsername id, timestamp # This is a async function
+      else if words[5] is 'remote' and words[6] is 'IP'
+        @_setUsername id, timestamp # This is a async function
 
-    else if words[5] is 'Sent' and words[8] is 'received'
-      activeSession[id].sent = Number(words[6]) / 1024 / 1024
-      activeSession[id].received = Number(words[9]) / 1024 / 1024
+      else if words[5] is 'Sent' and words[8] is 'received'
+        activeSession[id].sent = Number(words[6]) / 1024 / 1024
+        activeSession[id].received = Number(words[9]) / 1024 / 1024
 
-    else if words[5] is 'Exit.'
-      activeSession[id].end = timestamp.toDate()
-      if activeSession[id].end and activeSession[id].start
-        activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
-      @num_saving += 1
-      if @num_saving >= MAX_SAVE
-        @pause = true
-      activeSession[id].save (err) =>
-        throw err if err
-        console.log 'session saved ' + id
-        @num_saving -= 1
-        if @num_saving < MAX_SAVE
-          @pause = false
-        delete activeSession[id]
+      else if words[5] is 'Exit.'
+        activeSession[id].end = timestamp.toDate()
+        if activeSession[id].end and activeSession[id].start
+          activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
+        @num_saving += 1
+        if @num_saving >= MAX_SAVE
+          @pause = true
+        activeSession[id].save (err) =>
+          throw err if err
+          console.log 'session saved ' + id
+          @num_saving -= 1
+          if @num_saving < MAX_SAVE
+            @pause = false
+          delete activeSession[id]
 
 
   _setUsernameCore: (id, data, timestamp) ->
