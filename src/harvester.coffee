@@ -37,7 +37,7 @@ class Harvester extends events.EventEmitter
       command.stdout.on 'data', (chunk) =>
         data += chunk
       command.on 'close', =>
-        fs.writeFileSync('./last.txt', 'w');
+        fs.writeFileSync('./last.txt', data);
         @emit 'ready'
 
 
@@ -105,7 +105,7 @@ class Harvester extends events.EventEmitter
         throw err if err
         delete activeSession[id]
 
-  _setUsername: (data, timestamp) ->
+  _setUsername: (id, data, timestamp) ->
     year = timestamp.year
     month = timestamp.month
     day = timestamp.day
@@ -134,7 +134,7 @@ class Harvester extends events.EventEmitter
       command.stdout.on 'data', (chunk) =>
         data += chunk
       command.on 'close', =>
-        _setUsername data, timestamp
+        @_setUsername id, data, timestamp
     else
       rstream = fs.createReadStream './last.txt',
         encoding: 'utf8'
@@ -142,7 +142,7 @@ class Harvester extends events.EventEmitter
       rstream.on 'data', (chunk) =>
         data += chunk
       rstream.on 'end', =>
-        _setUsername data, timestamp
+        @_setUsername id, data, timestamp
 
 
   _setUsernameMock: (id, timestamp, mode='realtime') ->
