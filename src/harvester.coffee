@@ -74,6 +74,7 @@ class Harvester extends events.EventEmitter
       if words[5] is 'peer' and words[6] is 'from'
         activeSession[id] = new Session
         activeSession[id].id = id
+        activeSession[id].start = timestamp.toDate()
         activeSession[id].ip = words[9]
       
       else if words[5] is 'remote' and words[6] is 'IP'
