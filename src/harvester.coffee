@@ -67,13 +67,11 @@ class Harvester extends events.EventEmitter
     bracketPos = proc.indexOf('[')
     return if bracketPos is -1
     procName = proc[0..bracketPos-1]
-    nonuid = proc[bracketPos+1...-2]
+    id = proc[bracketPos+1...-2]
 
     if procName is 'pppd'
       timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
-
       if words[5] is 'peer' and words[6] is 'from'
-        id = nonuid + timestamp.toDate()
         activeSession[id] = new Session
         activeSession[id].id = id
         activeSession[id].ip = words[9]
@@ -90,16 +88,14 @@ class Harvester extends events.EventEmitter
         if activeSession[id].start
           activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
         @count++
-        console.log @count
-        ###
         activeSession[id].save (err) =>
+          console.log "save to db " + id
           throw err if err
-          console.log 'save session ' + id
           @count--
           delete activeSession[id]
           if @count == 0
             @emit 'finish'
-        ###
+
   _setUsername: (id, timestamp) ->
     currDate = new Date()
     if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
@@ -110,13 +106,9 @@ class Harvester extends events.EventEmitter
       command.on 'close', =>
         @_setUsernameCore id, data, timestamp
     else
-      rstream = fs.createReadStream './last.txt',
+      data = fs.readFileSync './last.txt',
         encoding: 'utf8'
-      data = ''
-      rstream.on 'data', (chunk) =>
-        data += chunk
-      rstream.on 'end', =>
-        @_setUsernameCore id, data, timestamp
+      @_setUsernameCore id, data, timestamp
 
   _setUsernameCore: (id, data, timestamp) ->
     year = timestamp.year
@@ -124,6 +116,7 @@ class Harvester extends events.EventEmitter
     day = timestamp.day
     time = timestamp.time
     records = data.split "\n"
+
     if activeSession[id]
       for record in records
         words = record.split(/[ ]+/)
@@ -131,6 +124,7 @@ class Harvester extends events.EventEmitter
           activeSession[id].username = words[0]
     else
       Session.findOne {'id': id},  (err, session) =>
+        return if not session
         throw err if err
         for record in records
           words = record.split(/[ ]+/)
