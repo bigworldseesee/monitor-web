@@ -19,7 +19,7 @@ activeSession = {}
 # combines the log from `last` to form the session information
 class Harvester extends events.EventEmitter
 
-  constructor: (@logPath, @istest=false) ->
+  constructor: (@logPath) ->
     Syslog.findOne {'name': @logPath},  (err, syslog) =>
       throw err if err
       if not syslog
@@ -40,10 +40,8 @@ class Harvester extends events.EventEmitter
         fs.writeFileSync('./last.txt', data);
         @emit 'ready'
 
-
   harvest: ->
-    @num_saving = 0
-    @pause = false
+    @count = 0
     @currSize = fs.statSync(@logPath).size
     rstream = fs.createReadStream @logPath,
       encoding: 'utf8'
@@ -56,9 +54,6 @@ class Harvester extends events.EventEmitter
     rstream.on 'end', =>
       lines = data.split "\n"
       @process line for line in lines
-      if @istest
-        util.sleep 3000
-        console.log lines 
       @_syslog.prevSize = @prevSize
       @_syslog.save (err) =>
         throw err if err
@@ -101,10 +96,15 @@ class Harvester extends events.EventEmitter
         activeSession[id].end = timestamp.toDate()
         if activeSession[id].end and activeSession[id].start
           activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
+        @count++
         activeSession[id].save (err) =>
           throw err if err
           console.log 'save session ' + id
+          @count--
           delete activeSession[id]
+          if @count == 0
+            console.log 'going to emit finish'
+            @emit 'finish'
 
   _setUsername: (id, timestamp) ->
     currDate = new Date()
