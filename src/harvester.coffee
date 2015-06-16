@@ -58,7 +58,6 @@ class Harvester extends events.EventEmitter
       @_syslog.save (err) =>
         throw err if err
       # Current log processing complete, notify the world.
-      @emit 'finish'
 
 
   process: (line) ->
@@ -68,44 +67,39 @@ class Harvester extends events.EventEmitter
     bracketPos = proc.indexOf('[')
     return if bracketPos is -1
     procName = proc[0..bracketPos-1]
-    id = proc[bracketPos+1...-2]
+    nonuid = proc[bracketPos+1...-2]
 
     if procName is 'pppd'
       timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
-      if not activeSession[id]
+
+      if words[5] is 'peer' and words[6] is 'from'
+        id = nonuid + timestamp.toDate()
         activeSession[id] = new Session
         activeSession[id].id = id
-
-      if words[5] is 'Plugin'
-        activeSession[id].start = timestamp.toDate()
-
-      else if words[6] is 'interface'
-          activeSession[id].interface = words[7]
-
-      else if words[5] is 'peer' and words[6] is 'from'
         activeSession[id].ip = words[9]
-
+      
       else if words[5] is 'remote' and words[6] is 'IP'
         @_setUsername id, timestamp # This is a async function
 
-      else if words[5] is 'Sent' and words[8] is 'received'
+      else if activeSession[id] and words[5] is 'Sent' and words[8] is 'received'
         activeSession[id].sent = Number(words[6]) / 1024 / 1024
         activeSession[id].received = Number(words[9]) / 1024 / 1024
 
-      else if words[5] is 'Exit.'
+      else if activeSession[id] and words[5] is 'Exit.'
         activeSession[id].end = timestamp.toDate()
-        if activeSession[id].end and activeSession[id].start
+        if activeSession[id].start
           activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
         @count++
+        console.log @count
+        ###
         activeSession[id].save (err) =>
           throw err if err
           console.log 'save session ' + id
           @count--
           delete activeSession[id]
           if @count == 0
-            console.log 'going to emit finish'
             @emit 'finish'
-
+        ###
   _setUsername: (id, timestamp) ->
     currDate = new Date()
     if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
