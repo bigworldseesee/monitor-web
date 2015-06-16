@@ -14,7 +14,6 @@ TimeStamp = util.TimeStamp
 activeSession = {}
 # (TODO) Fix: if the server restarts, some active sessions could be lost.
 
-MAX_SAVE = 100
 
 # Havester collects the changes from syslog and
 # combines the log from `last` to form the session information
@@ -75,17 +74,8 @@ class Harvester extends events.EventEmitter
     return if bracketPos is -1
     procName = proc[0..bracketPos-1]
     id = proc[bracketPos+1...-2]
-    @_processPPP words, id if procName is 'pppd'
 
-
-  _processPPP: (words, id) ->
-    if @pause
-      setTimeout =>
-        console.log 'timeout done ' + id
-        @_processPPP words, id
-      , 3000
-    else
-      console.log 'not timeout ' + id
+    if procName is 'pppd'
       timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
       if not activeSession[id]
         activeSession[id] = new Session
@@ -111,44 +101,10 @@ class Harvester extends events.EventEmitter
         activeSession[id].end = timestamp.toDate()
         if activeSession[id].end and activeSession[id].start
           activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
-        @num_saving += 1
-        if @num_saving >= MAX_SAVE
-          @pause = true
         activeSession[id].save (err) =>
           throw err if err
-          console.log 'session saved ' + id
-          @num_saving -= 1
-          if @num_saving < MAX_SAVE
-            @pause = false
+          console.log 'save session ' + id
           delete activeSession[id]
-
-
-  _setUsernameCore: (id, data, timestamp) ->
-    year = timestamp.year
-    month = timestamp.month
-    day = timestamp.day
-    time = timestamp.time
-    records = data.split "\n"
-    if activeSession[id]
-      for record in records
-        words = record.split(/[ ]+/)
-        if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-          activeSession[id].username = words[0]
-    else
-      Session.findOne {'id': id},  (err, session) =>
-        throw err if err
-        for record in records
-          words = record.split(/[ ]+/)
-          if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-            session.username = words[0]
-            @num_saving += 1
-            if @num_saving >= MAX_SAVE
-              @pause = true
-            session.save (err) =>
-              throw err if err
-              @num_saving -= 1
-              if @num_saving < MAX_SAVE
-                @pause = false
 
   _setUsername: (id, timestamp) ->
     currDate = new Date()
@@ -168,34 +124,28 @@ class Harvester extends events.EventEmitter
       rstream.on 'end', =>
         @_setUsernameCore id, data, timestamp
 
-
-  _setUsernameMock: (id, timestamp, mode='realtime') ->
+  _setUsernameCore: (id, data, timestamp) ->
     year = timestamp.year
     month = timestamp.month
     day = timestamp.day
     time = timestamp.time
-
-    rstream = fs.createReadStream './res/last.txt',
-      encoding: 'utf8'
-    data = ''
-    rstream.on 'data', (chunk) =>
-      data += chunk
-    rstream.on 'end', =>
-      records = data.split "\n"
-      if activeSession[id]
+    records = data.split "\n"
+    if activeSession[id]
+      for record in records
+        words = record.split(/[ ]+/)
+        if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
+          activeSession[id].username = words[0]
+    else
+      Session.findOne {'id': id},  (err, session) =>
+        throw err if err
         for record in records
           words = record.split(/[ ]+/)
-          if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-            activeSession[id].username = words[0]
-      else
-        Session.findOne {'id': id},  (err, session) =>
-          throw err if err
-          for record in records
-            words = record.split(/[ ]+/)
-            if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
-              session.username = words[0]
-              session.save (err) =>
-                throw err if err
+          if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
+            session.username = words[0]
+            session.save (err) =>
+              throw err if err
+
+
 
 
 module.exports.Harvester = Harvester
