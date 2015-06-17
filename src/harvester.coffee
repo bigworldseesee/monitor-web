@@ -41,7 +41,6 @@ class Harvester extends events.EventEmitter
         @emit 'ready'
 
   harvest: ->
-    @count = 0
     @currSize = fs.statSync(@logPath).size
     rstream = fs.createReadStream @logPath,
       encoding: 'utf8'
@@ -58,7 +57,7 @@ class Harvester extends events.EventEmitter
       @_syslog.save (err) =>
         throw err if err
       # Current log processing complete, notify the world.
-
+      @emit 'finish'
 
   process: (line) ->
     words = line.split(/[ ]+/)
@@ -88,14 +87,9 @@ class Harvester extends events.EventEmitter
         activeSession[id].end = timestamp.toDate()
         if activeSession[id].start
           activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
-        @count++
         activeSession[id].save (err) =>
-          console.log "save to db " + id
           throw err if err
-          @count--
           delete activeSession[id]
-          if @count == 0
-            @emit 'finish'
 
   _setUsername: (id, timestamp) ->
     currDate = new Date()
