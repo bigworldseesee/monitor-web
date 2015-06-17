@@ -67,13 +67,13 @@ class Harvester extends events.EventEmitter
     return if bracketPos is -1
     procName = proc[0..bracketPos-1]
     id = proc[bracketPos+1...-2]
+    timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
 
     if procName is 'pppd'
-      timestamp = new TimeStamp(new Date().getFullYear(), words[0], words[1], words[2])
       if words[5] is 'peer' and words[6] is 'from'
-        activeSession[id] = new Session
-        activeSession[id].id = id
+        activeSession[id] = new Object
         activeSession[id].start = timestamp.toDate()
+        activeSession[id].id = id
         activeSession[id].ip = words[9]
       
       else if words[5] is 'remote' and words[6] is 'IP'
@@ -84,12 +84,32 @@ class Harvester extends events.EventEmitter
         activeSession[id].received = Number(words[9]) / 1024 / 1024
 
       else if activeSession[id] and words[5] is 'Exit.'
-        activeSession[id].end = timestamp.toDate()
-        if activeSession[id].start
-          activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
-        activeSession[id].save (err) =>
-          throw err if err
-          delete activeSession[id]
+        @_saveSession id, timestamp, activeSession[id].received, activeSession[id].sent
+
+    else if procName is 'cron'
+      if words[6] is 'STARTUP'
+        for id, session of activeSession
+          @_saveSession id, timestamp, 0, 0
+
+  _saveSession: (id, timestamp, received, sent) ->
+    activeSession[id].end = timestamp.toDate()
+    activeSession[id].duration = (activeSession[id].end - activeSession[id].start) / 1000 / 60
+    thisSession = new Session (
+      username: activeSession[id].username
+      id: activeSession[id].id
+      interface: activeSession[id].interface
+      ip: activeSession[id].ip
+      start: activeSession[id].start
+      end : activeSession[id].end
+      duration: activeSession[id].duration
+      received: received
+      sent: sent
+    )
+    delete activeSession[id]
+    thisSession.save (err) =>
+      throw err if err
+      console.log id + ' is saved'
+
 
   _setUsername: (id, timestamp) ->
     currDate = new Date()
