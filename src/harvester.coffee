@@ -75,13 +75,21 @@ class Harvester extends events.EventEmitter
         activeSession[id].start = timestamp.toDate()
         activeSession[id].id = id
         activeSession[id].ip = words[9]
-      
-      else if words[5] is 'remote' and words[6] is 'IP'
         @_setUsername id, timestamp # This is a async function
 
+      # This is a failed connection, does not count.
+      else if words[9] is '(Failed' and words[10] is 'to' and words[11] is 'authenticate' and words[12] is 'ourselves'
+        delete activeSession[id]
+
+      # Many connections are not successful and failed due a few reasons.
+      # They have send some packets back and forth but the size are pretty small.
+      # This is really an adhoc way of determining if a session is succesful or not.
       else if activeSession[id] and words[5] is 'Sent' and words[8] is 'received'
-        activeSession[id].sent = Number(words[6]) / 1024 / 1024
-        activeSession[id].received = Number(words[9]) / 1024 / 1024
+        if Number(words[6]) < 500 and Number(words[9]) < 500
+          delete activeSession[id]
+        else
+          activeSession[id].sent = Number(words[6]) / 1024 / 1024
+          activeSession[id].received = Number(words[9]) / 1024 / 1024
 
       else if activeSession[id] and words[5] is 'Exit.'
         @_saveSession id, timestamp, activeSession[id].received, activeSession[id].sent
@@ -108,7 +116,6 @@ class Harvester extends events.EventEmitter
     delete activeSession[id]
     thisSession.save (err) =>
       throw err if err
-      console.log id + ' is saved'
 
 
   _setUsername: (id, timestamp) ->
@@ -131,11 +138,11 @@ class Harvester extends events.EventEmitter
     day = timestamp.day
     time = timestamp.time
     records = data.split "\n"
-
     if activeSession[id]
       for record in records
         words = record.split(/[ ]+/)
-        if words[2] is activeSession[id].ip and words[4] is month and words[5] is day and words[6] is time[0..4]
+        # The last message and the syslog message could be seconds apart, here release the check to 60 seconds
+        if words[2] is activeSession[id].ip and Math.abs(new Date([year, words[4], words[5],words[6]].join(' ')) - timestamp.toDate()) < 60000
           activeSession[id].username = words[0]
     else
       Session.findOne {'id': id},  (err, session) =>
@@ -143,7 +150,7 @@ class Harvester extends events.EventEmitter
         throw err if err
         for record in records
           words = record.split(/[ ]+/)
-          if words[2] is session.ip and words[4] is month and words[5] is day and words[6] is time[0..4]
+          if words[2] is activeSession[id].ip and Math.abs(new Date([year, words[4], words[5],words[6]].join(' ')) - timestamp.toDate()) < 60000
             session.username = words[0]
             session.save (err) =>
               throw err if err
