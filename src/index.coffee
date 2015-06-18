@@ -29,6 +29,7 @@ router.get '/', (req, res) ->
       res.render 'index',
         title : 'Daily active users'
         stats : stats
+        alldates: alldates
     else
       Session.find {}, (err, sessions) =>
         console.log err if err
