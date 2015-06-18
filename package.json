@@ -16,6 +16,6 @@
     "coffee-script": "~1.4.0",
     "mongoose": "latest",
     "sprintf": "latest",
-    "moment-timezone": "latest",
+    "moment-timezone": "latest"
   }
 }
