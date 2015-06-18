@@ -12,6 +12,7 @@ Session = db.Session
 num_session = 0
 ids = []
 stats = {}
+alldates = []
 
 getChinaDate = (utcStart, utcEnd) ->
   span = [0..Math.floor((utcEnd.getTime() - utcStart.getTime())/ ONEDAY)]
@@ -38,6 +39,7 @@ router.get '/', (req, res) ->
           for date in getChinaDate(session.start, session.end)
             if not stats[date]
               stats[date] = {}
+              alldates.push(date)
               stats[date]['count'] = 1
               stats[date]['users'] = [session.username]
               stats[date]['received'] = session.received
@@ -48,8 +50,10 @@ router.get '/', (req, res) ->
                 stats[date]['users'].push session.username
               stats[date]['received'] += session.received
               stats[date]['sent'] += session.sent
+        alldates.sort()
         res.render 'index',
           title : 'Daily active users'
-          stats: stats
+          alldates : alldates
+          stats : stats
 
 module.exports = router

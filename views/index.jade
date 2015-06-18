@@ -8,10 +8,10 @@ block content
       th Number of users
       th Received (Mb)
       th Sent (Mb)
-      -each stat, date in stats
+      -each date in alldates
         tr
           td(style='width: '+(60/2)+'%').
             #{date}
-          td #{stat.count}
-          td #{sprintf(format, stat.sent)}
-          td #{sprintf(format, stat.received)}
+          td #{stats[date].count}
+          td #{sprintf(format, stats[date].sent)}
+          td #{sprintf(format, stats[date].received)}
