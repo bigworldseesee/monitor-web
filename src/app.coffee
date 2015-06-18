@@ -10,7 +10,7 @@ mongoose = require 'mongoose'
 routes = require './routes/index'
 user = require './routes/user'
 
-mongoose.connect 'mongodb://localhost/bwss-monitor'
+mongoose.connect 'mongodb://localhost/bwss-se'
 
 app = express()
 
