@@ -33,8 +33,6 @@ router.get '/', (req, res) ->
         console.log err if err
         num_session = sessions.length
         for session in sessions
-          if not session.username
-            console.log session.id + ' ' + session.username
           continue if session.id in ids
           ids.push(session.id)
           for date in getChinaDate(session.start, session.end)
