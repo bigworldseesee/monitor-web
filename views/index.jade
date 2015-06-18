@@ -1,40 +1,17 @@
 extends layout
 
 block content
-
-  form(name="input", method="post", action="/user")
-    | username:
-    input(type="text", name="username")
-
-    input(type="submit", value="Submit")
-
-  -function prettyDate(date){
-    -var d = date.getDate();
-    -var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
-    -var m = monthNames[date.getMonth()];
-    -var y = date.getFullYear();
-    -var h = date.getHours();
-    -var min = date.getMinutes();
-    -return d+' '+m+' '+y+' '+h+':'+min;
-  -}
-
   h1= title
-  h2 Only show 50 entries
-  
-  if sessions
-    table(border=1)
-      tr
-        th Username
-        th Start
-        th Duration (分钟)
-        th Sent （Mb)
-        th Received (Mb)
-      - each session in sessions
+  table(border=1)
+    tr
+      th Date
+      th Number of users
+      th Received (Mb)
+      th Sent (Mb)
+      -each stat, date in stats
         tr
-          td(style='width: '+(50/2)+'%').
-            #{session.username}
           td(style='width: '+(60/2)+'%').
-            #{prettyDate(session.start)}
-          td #{sprintf(format, session.duration)}
-          td #{sprintf(format, session.sent)}
-          td #{sprintf(format, session.received)}
+            #{date}
+          td #{stat.count}
+          td #{sprintf(format, stat.sent)}
+          td #{sprintf(format, stat.received)}
