@@ -25,8 +25,9 @@ app.use bodyParser.urlencoded(extended: true)
 app.use require('stylus').middleware(__dirname + '/public')
 app.use express.static path.join(__dirname, 'public')
 
-app.locals.sprintf = require('sprintf').sprintf;
-app.locals.format = "%1.1f";
+app.locals.sprintf = require('sprintf').sprintf
+app.locals.moment = require 'moment-timezone'
+app.locals.format = '%1.1f'
 
 
 app.use '/', routes

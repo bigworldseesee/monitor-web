@@ -18,6 +18,10 @@ block content
     -return d+' '+m+' '+y+' '+h+':'+min;
   -}
 
+  -function chinaDate(date){
+    -return moment(date).tz('Asia/Shanghai')
+  -}
+
   h1= title
   if sessions[0]
     h2= sessions[0].username
@@ -30,7 +34,7 @@ block content
       - each session in sessions
         tr
           td(style='width: '+(80/2)+'%').
-            #{prettyDate(session.start)}
+            #{prettyDate(chinaDate(session.start))}
           td #{sprintf(format, session.duration)}
           td #{sprintf(format, session.sent)}
           td #{sprintf(format, session.received)}
