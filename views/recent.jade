@@ -11,6 +11,9 @@ block content
     -var min = date.getMinutes();
     -return d+' '+m+' '+y+' '+h+':'+min;
   -}
+  -function chinaDate(date){
+    -return moment(date).tz('Asia/Shanghai')
+  -}
 
   h1= title
   h2 Recent 50 connections
@@ -32,8 +35,8 @@ block content
             #{session.username}
           td(style='width: '+(40/2)+'%').
             #{session.ip}
-          td(style='width: '+(40/2)+'%').
-            #{prettyDate(session.start)}
+          td(style='width: '+(100/2)+'%').
+            #{chinaDate(session.start)}
           td #{sprintf(format, session.duration)}
           td #{sprintf(format, session.sent)}
           td #{sprintf(format, session.received)}
