@@ -10,6 +10,7 @@ Syslog = db.Syslog
 Session = db.Session
 FileWatcher = util.FileWatcher
 TimeStamp = util.TimeStamp
+sleep = util.sleep
 
 activeSession = {}
 # (TODO) Fix: if the server restarts, some active sessions could be lost.
@@ -76,7 +77,7 @@ class Harvester extends events.EventEmitter
         activeSession[id].id = id
         activeSession[id].ip = words[9]
         @_setUsername id, timestamp # This is a async function
-
+      
       # This is a failed connection, does not count.
       else if words[9] is '(Failed' and words[10] is 'to' and words[11] is 'authenticate' and words[12] is 'ourselves'
         delete activeSession[id]
@@ -121,14 +122,16 @@ class Harvester extends events.EventEmitter
   _setUsername: (id, timestamp) ->
     currDate = new Date()
     if currDate - timestamp.toDate() < 10000 # If the syslog and current time larger than 10 seconds
-      command = spawn('last', ['-w', '-10'])
-      data = ''
-      command.stdout.on 'data', (chunk) =>
-        data += chunk
-      command.on 'close', =>
-        @_setUsernameCore id, data, timestamp
+      setTimeout( =>
+        command = spawn('last', ['-w', '-10'])
+        data = ''
+        command.stdout.on 'data', (chunk) =>
+          data += chunk
+        command.on 'close', =>
+          @_setUsernameCore id, data, timestamp
+       , 2000)
     else
-      data = fs.readFileSync './last.txt',
+      data = fs.readFileSync './last.txt', 
         encoding: 'utf8'
       @_setUsernameCore id, data, timestamp
 
@@ -144,6 +147,7 @@ class Harvester extends events.EventEmitter
         # The last message and the syslog message could be seconds apart, here release the check to 60 seconds
         if words[2] is activeSession[id].ip and Math.abs(new Date([year, words[4], words[5],words[6]].join(' ')) - timestamp.toDate()) < 60000
           activeSession[id].username = words[0]
+          break
     else
       Session.findOne {'id': id},  (err, session) =>
         return if not session
