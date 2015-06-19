@@ -15,4 +15,5 @@ task 'compile', "Compiles CoffeeScript src/*.coffee to lib/*.js", ->
     fs.renameSync('lib/app.js', 'app.js')
     fs.renameSync('lib/index.js', 'routes/index.js')
     fs.renameSync('lib/user.js', 'routes/user.js')
+    fs.renameSync('lib/recent.js', 'routes/recent.js')
   
