@@ -9,6 +9,7 @@ mongoose = require 'mongoose'
 
 routes = require './routes/index'
 user = require './routes/user'
+recent = require './routes/recent'
 
 mongoose.connect 'mongodb://localhost/bwss-se'
 
@@ -30,6 +31,7 @@ app.locals.format = "%1.1f";
 
 app.use '/', routes
 app.use '/user', user
+app.use '/recent', recent
 
 
 http.createServer(app).listen app.get('port'), ->

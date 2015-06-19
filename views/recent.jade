@@ -1,0 +1,39 @@
+extends layout
+
+block content
+
+  -function prettyDate(date){
+    -var d = date.getDate();
+    -var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+    -var m = monthNames[date.getMonth()];
+    -var y = date.getFullYear();
+    -var h = date.getHours();
+    -var min = date.getMinutes();
+    -return d+' '+m+' '+y+' '+h+':'+min;
+  -}
+
+  h1= title
+  h2 Recent 50 connections
+  
+  if sessions
+    table(border=1)
+      tr
+        th Session ID
+        th Username
+        th IP
+        th Start
+        th Duration (分钟)
+        th Sent （Mb)
+        th Received (Mb)
+      - each session in sessions
+        tr
+          td #{session.id}
+          td(style='width: '+(50/2)+'%').
+            #{session.username}
+          td(style='width: '+(40/2)+'%').
+            #{session.ip}
+          td(style='width: '+(40/2)+'%').
+            #{prettyDate(session.start)}
+          td #{sprintf(format, session.duration)}
+          td #{sprintf(format, session.sent)}
+          td #{sprintf(format, session.received)}
