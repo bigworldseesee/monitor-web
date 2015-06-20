@@ -11,7 +11,8 @@ routes = require './routes/index'
 user = require './routes/user'
 recent = require './routes/recent'
 
-mongoose.connect 'mongodb://localhost/bwss-se'
+dbconfig = require './config'
+mongoose.connect dbconfig.app_url
 
 app = express()
 

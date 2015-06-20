@@ -3,7 +3,8 @@ mongoose = require 'mongoose'
 harvester = require './harvester'
 util = require './util'
 
-mongoose.connect 'mongodb://localhost/bwss-monitor'
+dbconfig = require '../config'
+mongoose.connect dbconfig.harvester_url
 
 
 logPath = '/var/log/syslog'
