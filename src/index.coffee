@@ -10,9 +10,11 @@ router = express.Router()
 Session = db.Session
 
 num_session = 0
-ids = []
+_ids = []
 stats = {}
 alldates = []
+users = {}
+usage = {}
 
 getChinaDate = (utcStart, utcEnd) ->
   span = [0..Math.floor((utcEnd.getTime() - utcStart.getTime())/ ONEDAY)]
@@ -29,14 +31,15 @@ router.get '/', (req, res) ->
       res.render 'index',
         title : 'Daily active users'
         stats : stats
-        alldates: alldates
+        alldates : alldates
+        usage : usage
     else
       Session.find {}, (err, sessions) =>
         console.log err if err
         num_session = sessions.length
         for session in sessions
-          continue if session.id in ids
-          ids.push(session.id)
+          continue if session._id in _ids
+          _ids.push(session._id)
           for date in getChinaDate(session.start, session.end)
             if not stats[date]
               stats[date] = {}
@@ -52,9 +55,43 @@ router.get '/', (req, res) ->
               stats[date]['received'] += session.received
               stats[date]['sent'] += session.sent
         alldates.sort()
+        alldates.reverse()
+
+        usage['1'] = {}
+        usage['1']['count'] = 0
+        usage['1']['cumu'] = 0
+        for date, v of stats
+          for user in v['users']
+            if users[user]
+              count = users[user]
+              usage[count.toString()]['count']--
+              count++
+              users[user] = count
+              if usage[count.toString()]
+                usage[count.toString()]['count']++
+              else
+                usage[count.toString()] = {}
+                usage[count.toString()]['count'] = 1
+            else
+              users[user] = 1
+              usage['1']['count'] += 1
+        for days, info of usage
+          if days is '1'
+            cumu = usage[days]['count']
+          else
+            cumu += usage[days]['count']
+          usage[days]['cumu'] = cumu
+
+        console.log users
+        for user, count of users
+          if usage[count.toString()]['users']
+            usage[count.toString()]['users'].push(user)
+          else
+            usage[count.toString()]['users'] = [user]
+
         res.render 'index',
           title : 'Daily active users'
           alldates : alldates
           stats : stats
-
+          usage: usage
 module.exports = router

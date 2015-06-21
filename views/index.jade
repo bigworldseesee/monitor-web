@@ -1,6 +1,23 @@
 extends layout
 
 block content
+  -function stringtoNumber(str){
+    -return Number(str)
+  -}
+  h1 Usage Count
+  table(border=1)
+    tr
+      th Days used
+      th Number of users
+      th Accumulated Number of users
+      th Users
+      -each info, days in usage
+        tr
+          td(style='width: '+(60/2)+'%').
+            #{days}
+          td #{info['count']}
+          td #{info['cumu']}
+          td #{info['users']}
   h1= title
   table(border=1)
     tr
