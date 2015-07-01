@@ -11,8 +11,8 @@ routes = require './routes/index'
 user = require './routes/user'
 recent = require './routes/recent'
 
-dbconfig = require './config'
-mongoose.connect dbconfig.app_url
+config = require './lib/config'
+mongoose.connect config.appUrl
 
 app = express()
 
