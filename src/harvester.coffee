@@ -26,14 +26,13 @@ class Harvester extends events.EventEmitter
       data += chunk
     rstream.on 'end', =>
       @lines = data.split "\n"
-      @process(0, @lines.length)
+      @process(0, @lines.length-1) # There is a newline
 
   process: (idx, num_lines) ->
     if idx == num_lines
       @emit 'finish'
       return
     line = @lines[idx]
-    console.log line
     words = line.split(/[ ]+/)
     proc = words[3]
     bracketPos = proc.indexOf('[')
