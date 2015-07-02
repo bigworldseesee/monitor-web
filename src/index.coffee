@@ -1,8 +1,9 @@
 # index.coffee
+
 express = require 'express'
 mongoose = require 'mongoose'
 moment = require 'moment-timezone'
-db = require '../lib/db'
+db = require '../model/db'
 
 ONEDAY = 1000 * 60 * 60 * 24
 
@@ -38,7 +39,7 @@ router.get '/', (req, res) ->
         console.log err if err
         num_session = sessions.length
         for session in sessions
-          continue if session._id in _ids
+          continue if session._id in _ids or session.active 
           _ids.push(session._id)
           for date in getChinaDate(session.start, session.end)
             if not stats[date]
@@ -46,14 +47,14 @@ router.get '/', (req, res) ->
               alldates.push(date)
               stats[date]['count'] = 1
               stats[date]['users'] = [session.username]
-              stats[date]['received'] = session.received
-              stats[date]['sent'] = session.sent
+              stats[date]['received'] = if session.received then session.received else 0
+              stats[date]['sent'] = if session.sent then session.sent else 0
             else
               if session.username not in stats[date]['users']
                 stats[date]['count'] += 1
                 stats[date]['users'].push session.username
-              stats[date]['received'] += session.received
-              stats[date]['sent'] += session.sent
+              stats[date]['received'] += if session.received then session.received else 0
+              stats[date]['sent'] += if session.sent then session.sent else 0
         alldates.sort()
         alldates.reverse()
 
@@ -82,7 +83,6 @@ router.get '/', (req, res) ->
             cumu += usage[days]['count']
           usage[days]['cumu'] = cumu
 
-        console.log users
         for user, count of users
           if usage[count.toString()]['users']
             usage[count.toString()]['users'].push(user)

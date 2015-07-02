@@ -1,5 +1,7 @@
-# user.coffee
+# db.coffee
+
 mongoose = require 'mongoose'
+
 Schema = mongoose.Schema
 
 SessionSchema = Schema (

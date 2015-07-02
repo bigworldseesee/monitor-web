@@ -1,7 +1,7 @@
 # recent.coffee
 express = require 'express'
 mongoose = require 'mongoose'
-db = require '../lib/db'
+db = require '../model/db'
 
 router = express.Router()
 Session = db.Session
@@ -16,6 +16,9 @@ router.get '/', (req, res) ->
       return 1 if keyA < keyB
       return 0
     )
+    for session in sessions
+      if not session.ip
+        console.log session.id
     res.render 'recent',
       title : 'Recent users'
       sessions : sessions[0..50]

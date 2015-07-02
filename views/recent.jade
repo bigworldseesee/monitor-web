@@ -37,6 +37,6 @@ block content
             #{session.ip}
           td(style='width: '+(100/2)+'%').
             #{chinaDate(session.start)}
-          td #{sprintf(format, session.duration)}
-          td #{sprintf(format, session.sent)}
-          td #{sprintf(format, session.received)}
+          td #{sprintf(format, session.duration / 60)}
+          td #{sprintf(format, session.sent / 1024 / 1024)}
+          td #{sprintf(format, session.received / 1024 / 1024)}

@@ -1,7 +1,7 @@
 # index.coffee
 express = require 'express'
 mongoose = require 'mongoose'
-db = require '../lib/db'
+db = require '../model/db'
 
 router = express.Router()
 Session = db.Session

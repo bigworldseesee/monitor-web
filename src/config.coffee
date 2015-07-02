@@ -1,5 +1,4 @@
+# config.coffee
 
 module.exports = 
-  'logPath' : './monitor.log'
-  'appUrl' : 'mongodb://localhost/bwss-monitor',
-  'harvesterUrl' : 'mongodb://localhost/bwss-monitor'
+  'url' : 'mongodb://localhost/bwss-monitor'

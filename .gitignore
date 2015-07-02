@@ -1,0 +1,7 @@
+# generated folders
+node_modules
+model
+routes
+
+# generated javascript files
+*.js
