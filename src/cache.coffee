@@ -16,13 +16,15 @@ exports.getConnectionDates = (utcStart, utcEnd) ->
 
 # Returns the duration percentage for each day.
 exports.getDurationPercentage = (utcStart, utcEnd) ->
+  tmp = new Date utcStart.getTime() 
+  tmp.setHours(23, 59, 59, 999)
   totalDuration = utcEnd.getTime() - utcStart.getTime()
-  if utcEnd < utcStart.setHours(23, 59, 59, 999)
+  if utcEnd < tmp
     return [1]
 
   result = []
-  day1 = utcStart.setHours(23, 59, 59, 999) - utcStart
-  result.push(day1 / totalDuration)
+  day1 = tmp - utcStart
+  result.push day1 / totalDuration
   remaining = totalDuration - day1
   while remaining > 0
     if remaining > ONEDAY

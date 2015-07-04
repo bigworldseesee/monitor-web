@@ -16,7 +16,6 @@ task 'compile', "Compiles CoffeeScript src/*.coffee to *.js", ->
     fs.mkdirSync('model/') if not fs.existsSync('model/')
     fs.renameSync('index.js', 'routes/index.js')
     fs.renameSync('user.js', 'routes/user.js')
-    fs.renameSync('recent.js', 'routes/recent.js')
     fs.renameSync('db.js', 'model/db.js')
     fs.renameSync('usage_chart.js', 'public/javascripts/usage_chart.js')
   

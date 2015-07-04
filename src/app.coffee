@@ -12,7 +12,6 @@ mongoose = require 'mongoose'
 
 routes = require './routes/index'
 user = require './routes/user'
-recent = require './routes/recent'
 
 
 config = require './config'
@@ -38,12 +37,12 @@ app.locals.format = '%1.1f'
 global.users = {}
 global.timeseries = {}
 global.usage = {}
+global.recent = []
 global.lastCheck = 0
 global.previousDate = 0
 
 app.use '/', routes
 app.use '/user', user
-app.use '/recent', recent
 
 
 http.createServer(app).listen app.get('port'), ->

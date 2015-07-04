@@ -1,11 +1,33 @@
 extends layout
 
 block content
+
+
   h1 Usage Statistics
+
   #chart
   #data
-    #usage(style="display: none")
+    #usage.noDisplay
       | !{JSON.stringify(usage)}
 
-
   script(type="text/javascript", src="/javascripts/usage_chart.js")
+
+  br/
+
+  h1 Recent Sessions
+  .nano
+    .nano-content
+      - each session in recent
+        p
+          b #{session.username}
+          br/
+          | #{session.start} -------  
+          b #{sprintf(format, session.duration / 60)}分钟
+          | ----- Sent #{sprintf(format, session.sent/1024/1024)}M
+          | ----- Received #{sprintf(format, session.sent/1024/1024)}M
+
+  script(src='/javascripts/jquery.nanoscroller.min.js')
+  script.
+    $(document).ready(function(){
+      $(".nano").nanoScroller();
+    });
