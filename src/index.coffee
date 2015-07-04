@@ -55,6 +55,7 @@ router.use (req, res, next) ->
       recent.unshift {
         'username' : session.username
         'start': moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
+        'end': moment(session.end).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
         'duration': session.duration
         'sent': session.sent
         'received': session.received

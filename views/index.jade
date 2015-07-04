@@ -15,16 +15,24 @@ block content
   br/
 
   h1 Recent Sessions
+  -var prevDate = ""
   .nano
     .nano-content
       - each session in recent
-        p
+        - console.log(session.start)
+        - console.log(prevDate)
+        - if(session.start.slice(0,10) != prevDate)
+          - prevDate = session.start.slice(0,10)
+          p
+            h3 #{session.start.slice(0, 10)}
+        
+        #username
           b #{session.username}
+          | #{session.start.slice(10)} to #{session.end.slice(10)}
           br/
-          | #{session.start} -------  
-          b #{sprintf(format, session.duration / 60)}分钟
-          | ----- Sent #{sprintf(format, session.sent/1024/1024)}M
-          | ----- Received #{sprintf(format, session.sent/1024/1024)}M
+          | #{sprintf(format, session.duration / 60)}分钟 ----- 
+          | Sent #{sprintf(format, session.sent/1024/1024)}M ----- 
+          | Received #{sprintf(format, session.sent/1024/1024)}M
 
   script(src='/javascripts/jquery.nanoscroller.min.js')
   script.

@@ -11,6 +11,12 @@ a {
     display: none;
 }
 
+#username {
+    font-size: 15px;
+    margin-left: 20px;
+    height: 50px;
+}
+
 
 /** initial setup **/
 .nano {
