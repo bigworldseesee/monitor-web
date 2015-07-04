@@ -1,34 +1,11 @@
 extends layout
 
 block content
-  -function stringtoNumber(str){
-    -return Number(str)
-  -}
-  h1 Usage Count
-  table(border=1)
-    tr
-      th Days used
-      th Number of users
-      th Accumulated Number of users
-      th Users
-      -each info, days in usage
-        tr
-          td(style='width: '+(60/2)+'%').
-            #{days}
-          td #{info['count']}
-          td #{info['cumu']}
-          td #{info['users']}
-  h1= title
-  table(border=1)
-    tr
-      th Date
-      th Number of users
-      th Sent (Mb)
-      th Received (Mb)
-      -each date in alldates
-        tr
-          td(style='width: '+(60/2)+'%').
-            #{date}
-          td #{stats[date].count}
-          td #{sprintf(format, stats[date].sent / 1024 / 1024)}
-          td #{sprintf(format, stats[date].received / 1024 /1024)}
+  h1 Usage Statistics
+  #chart
+  #data
+    #usage(style="display: none")
+      | !{JSON.stringify(usage)}
+
+
+  script(type="text/javascript", src="/javascripts/usage_chart.js")

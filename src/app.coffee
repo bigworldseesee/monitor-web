@@ -9,10 +9,12 @@ cookieParser = require 'cookie-parser'
 bodyParser = require 'body-parser'
 mongoose = require 'mongoose'
 
+
 routes = require './routes/index'
 user = require './routes/user'
 recent = require './routes/recent'
 
+loader = require './model/loader'
 config = require './model/config'
 mongoose.connect config.url
 
@@ -33,6 +35,11 @@ app.locals.sprintf = require('sprintf').sprintf
 app.locals.moment = require 'moment-timezone'
 app.locals.format = '%1.1f'
 
+global.users = {}
+global.timeseries = {}
+global.usage = {}
+global.lastCheck = 0
+global.previousDate = 0
 
 app.use '/', routes
 app.use '/user', user

@@ -3,5 +3,6 @@ node_modules
 model
 routes
 
-# generated javascript files
-*.js
+#
+/*.js
+/public/javascripts/usage_chart.js
