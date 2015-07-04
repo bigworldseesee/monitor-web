@@ -14,8 +14,8 @@ routes = require './routes/index'
 user = require './routes/user'
 recent = require './routes/recent'
 
-loader = require './model/loader'
-config = require './model/config'
+
+config = require './config'
 mongoose.connect config.url
 
 
