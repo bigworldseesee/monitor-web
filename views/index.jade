@@ -2,17 +2,34 @@ extends layout
 
 block content
 
-
-  h1 Usage Statistics
-
-  #chart
   #data
     #usage.noDisplay
       | !{JSON.stringify(usage)}
 
-  script(type="text/javascript", src="/javascripts/usage_chart.js")
 
-  br/
+  h1 Usage Statistics
+  #usage_chart
+
+
+  h1 Users
+  table#example.display.compact(cellspacing='0', width='80%', cellpadding="0", border="0")
+    thead
+      tr
+        th UserName
+        th Registration
+        th Connection Times
+        th Total Time(hour)
+        th Total Received(Mb)
+        th Total Sent(Mb)
+    tbody
+      -each info, user in users_summary
+        tr
+          td #{user}
+          td #{info.registerdate}
+          td #{info.count}
+          td #{sprintf(format, info.totaltime / 60 / 60)} 
+          td #{sprintf(format, info.received / 1024/1024)}
+          td #{sprintf(format, info.sent/ 1024/1024)}
 
   h1 Recent Sessions
   -var prevDate = ""
@@ -23,7 +40,6 @@ block content
           - prevDate = session.start.slice(0,10)
           p
             h3 #{session.start.slice(0, 10)}
-        
         #username
           b #{session.username}
           | #{session.start.slice(10)} to #{session.end.slice(10)}
@@ -32,8 +48,12 @@ block content
           | Sent #{sprintf(format, session.sent/1024/1024)}M ----- 
           | Received #{sprintf(format, session.sent/1024/1024)}M
 
-  script(src='/javascripts/jquery.nanoscroller.min.js')
+
+  script(type="text/javascript", src="/javascripts/usage_chart.js")
   script.
     $(document).ready(function(){
       $(".nano").nanoScroller();
+    });
+    $(document).ready(function() {
+      $('#example').DataTable();
     });

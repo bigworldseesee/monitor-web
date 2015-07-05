@@ -1,5 +1,7 @@
 # usage_chart.coffee
 
+unit = 'time'
+
 usage = JSON.parse($('#usage').text())
 dates = []
 count_0 = [0]
@@ -18,15 +20,16 @@ for date of usage
   count_4.push count_4[count_4.length-1] + (usage[date]['4'] ? 0)
   count_5_and_above.push  count_5_and_above[count_5_and_above.length-1] + (usage[date]['>4'] ? 0)
 
-count_0[0] = ['0 day']
-count_1[0] = ['1 day']
-count_2[0] = ['2 day']
-count_3[0] = ['3 day']
-count_4[0] = ['4 day']
+count_0[0] = ['0 ' + unit]
+count_1[0] = ['1 ' + unit]
+count_2[0] = ['2 ' + unit]
+count_3[0] = ['3 ' + unit]
+count_4[0] = ['4 ' + unit]
 count_5_and_above[0] = ['5 and above']
 
 
-chart = c3.generate(
+usage-chart = c3.generate(
+  bindto: '#usage_chart'
   data:
     columns: [
       count_0
@@ -39,11 +42,11 @@ chart = c3.generate(
     type: 'bar'
     order: null
     groups: [ [
-      '0 day'
-      '1 day'
-      '2 day'
-      '3 day'
-      '4 day'
+      '0 ' + unit
+      '1 ' + unit
+      '2 ' + unit
+      '3 ' + unit
+      '4 ' + unit
       '5 and above'
     ] ]
   axis:

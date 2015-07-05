@@ -48,8 +48,8 @@ router.use (req, res, next) ->
       dates = cache.getConnectionDates session.start, session.end
       ratios = cache.getDurationPercentage session.start, session.end
       for date, i in dates
-        cache.updateUsage date, session
         cache.updateUsers date, session, ratios[i]
+        cache.updateUsage date, session  # updateUsage() has to run after updateUsers()
         cache.updateTimeSeries date, session, ratios[i]
     next()
 
@@ -62,14 +62,16 @@ router.use (req, res, next) ->
       "$gte" : lastcheck
   }, (err, newusers) =>
     throw err if err
+    cache.updateRegisterDate newusers
     cache.updateInactiveUser newusers
+    lastcheck = new Date()
     next()
 
 
 router.get '/', (req, res) ->
     res.render 'index',
       title : 'Daily active users'
-      users : cache.users
+      users_summary : cache.users_summary
       timeseries : cache.timeseries
       usage: cache.usage
       recent: cache.recent
