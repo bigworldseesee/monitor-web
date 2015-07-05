@@ -9,8 +9,6 @@ users_summary = {}
 timeseries = {}
 usage = {}
 recent = []
-previousdate = 0
-previousinactive = 0
 check_by_day = false
 
 
@@ -64,9 +62,10 @@ updateUsers = (date, session, ratio) ->
   users[user][date]['sent'] += (session.sent ? 0) * ratio
   users[user][date]['totaltime'] += session.duration * ratio
   users_summary[user]['count'] += 1
-  users_summary[user]['totaltime'] += users[user][date]['totaltime']
-  users_summary[user]['sent'] += users[user][date]['sent']
-  users_summary[user]['received'] += users[user][date]['received']
+  users_summary[user]['received'] += (session.received ? 0) * ratio
+  users_summary[user]['sent'] += (session.sent ? 0) * ratio
+  users_summary[user]['totaltime'] += session.duration * ratio
+
   return
 
 
