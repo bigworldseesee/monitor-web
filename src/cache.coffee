@@ -4,9 +4,16 @@ moment = require 'moment-timezone'
 
 ONEDAY = 1000 * 60 * 60 * 24
 
+users = {}
+timeseries = {}
+usage = {}
+recent = []
+previousdate = 0
+previousinactive = 0
+
 
 # Returns dates in China time.
-exports.getConnectionDates = (utcStart, utcEnd) ->
+getConnectionDates = (utcStart, utcEnd) ->
   span = [0..Math.floor((utcEnd.getTime() - utcStart.getTime()) / ONEDAY)]
   dates = []
   for offset in span
@@ -15,7 +22,7 @@ exports.getConnectionDates = (utcStart, utcEnd) ->
 
 
 # Returns the duration percentage for each day.
-exports.getDurationPercentage = (utcStart, utcEnd) ->
+getDurationPercentage = (utcStart, utcEnd) ->
   tmp = new Date utcStart.getTime() 
   tmp.setHours(23, 59, 59, 999)
   totalDuration = utcEnd.getTime() - utcStart.getTime()
@@ -35,7 +42,7 @@ exports.getDurationPercentage = (utcStart, utcEnd) ->
       return result
 
 
-exports.updateTimeSeries = (date, session, ratio) ->
+updateTimeSeries = (date, session, ratio) ->
   # Update information for the time series
   timeseries[date] ?= {}
   timeseries[date]['count'] ?= 0
@@ -51,7 +58,7 @@ exports.updateTimeSeries = (date, session, ratio) ->
     timeseries[date]['users'].push session.username
 
 
-exports.updateUsers = (date, session, ratio) ->
+updateUsers = (date, session, ratio) ->
   # Update information for the user
   user = session.username
   users[user] ?= {}
@@ -65,35 +72,45 @@ exports.updateUsers = (date, session, ratio) ->
   users[user][date]['totaltime'] += session.duration * ratio
 
 
-exports.updateUsage = (date, session, previousDate) ->
-  # Initialize daily usage
-  if not usage[date]
-    if Object.keys(usage).length is 0
-      usage[date] = 
-        '1': 0
-        '2': 0
-        '3': 0
-        '4': 0
-        '>4': 0
-    else
-      usage[date] = 
-        '1': usage[previousDate]['1']
-        '2': usage[previousDate]['2']
-        '3': usage[previousDate]['3']
-        '4': usage[previousDate]['4']
-        '>4': usage[previousDate]['>4']
+updateUsage = (date, session) ->
   user = session.username
   users[user] ?= {}
+  usage[date] ?= {}
   if not users[user][date]
     num_days_login = Object.keys(users[user]).length
     if num_days_login is 0
+      usage[date]['1'] ?= 0
       usage[date]['1'] += 1
     else if num_days_login < 4
+      usage[date][num_days_login.toString()] ?= 0
       usage[date][num_days_login.toString()] -= 1
+      usage[date][(num_days_login+1).toString()] ?= 0
       usage[date][(num_days_login+1).toString()] += 1
     else if num_days_login is 4
+      usage[date]['4'] ?= 0
       usage[date]['4'] -= 1
+      usage[date]['>4'] ?= 0
       usage[date]['>4'] += 1
-  return date
 
 
+updateInactiveUser = (newusers) ->
+  newusers.sort (a,b) ->
+    new Date(a.signup.registerDate) - new Date(b.signup.registerDate)
+  for user in newusers
+    if not users.hasOwnProperty(user.local.email)
+      date = getConnectionDates(user.signup.registerDate, user.signup.registerDate)
+      usage[date] ?= {}
+      usage[date]['0'] ?= 0
+      usage[date]['0'] += 1
+
+
+exports.users = users
+exports.timeseries = timeseries
+exports.usage = usage
+exports.recent = recent
+exports.getConnectionDates = getConnectionDates 
+exports.getDurationPercentage = getDurationPercentage
+exports.updateTimeSeries = updateTimeSeries
+exports.updateUsers = updateUsers
+exports.updateUsage = updateUsage
+exports.updateInactiveUser = updateInactiveUser

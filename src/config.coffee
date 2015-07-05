@@ -1,4 +1,5 @@
 # config.coffee
 
 module.exports = 
-  'url' : 'mongodb://localhost/bwss-monitor'
+  'urlMonitor' : 'mongodb://localhost/bwss-monitor'
+  'urlRegister' : 'mongodb://localhost/bwss-se'

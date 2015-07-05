@@ -11,11 +11,8 @@ mongoose = require 'mongoose'
 
 
 routes = require './routes/index'
-user = require './routes/user'
-
 
 config = require './config'
-mongoose.connect config.url
 
 
 app = express()
@@ -34,16 +31,11 @@ app.locals.sprintf = require('sprintf').sprintf
 app.locals.moment = require 'moment-timezone'
 app.locals.format = '%1.1f'
 
-global.users = {}
-global.timeseries = {}
-global.usage = {}
-global.recent = []
-global.lastCheck = 0
-global.previousDate = 0
+
+global.dbMonitor = mongoose.createConnection config.urlMonitor
+global.dbRegister = mongoose.createConnection config.urlRegister
 
 app.use '/', routes
-app.use '/user', user
-
 
 http.createServer(app).listen app.get('port'), ->
   console.log "Express server listening on port " + app.get('port')

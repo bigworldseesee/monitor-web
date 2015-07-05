@@ -19,8 +19,6 @@ block content
   .nano
     .nano-content
       - each session in recent
-        - console.log(session.start)
-        - console.log(prevDate)
         - if(session.start.slice(0,10) != prevDate)
           - prevDate = session.start.slice(0,10)
           p
