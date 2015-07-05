@@ -12,7 +12,7 @@ block content
 
 
   h1 Users
-  table#example.display.compact(cellspacing='0', width='80%', cellpadding="0", border="0")
+  table#users-table.display.compact(cellspacing='0', width='80%', cellpadding="0", border="0")
     thead
       tr
         th UserName
@@ -55,5 +55,8 @@ block content
       $(".nano").nanoScroller();
     });
     $(document).ready(function() {
-      $('#example').DataTable();
+      $('#users-table').DataTable({
+        "iDisplayLength": 25,
+        "order":[[1, "desc"]]
+      });
     });

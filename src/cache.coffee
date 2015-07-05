@@ -123,23 +123,31 @@ updateTimeSeries = (date, session, ratio) ->
   return
 
 
-updateInactiveUser = (newusers) ->
-  newusers.sort (a,b) ->
-    new Date(a.signup.registerDate) - new Date(b.signup.registerDate)
-  for user in newusers
-    if not users.hasOwnProperty(user.local.email)
-      date = getConnectionDates(user.signup.registerDate, user.signup.registerDate)
-      usage[date] ?= {}
-      usage[date]['0'] ?= 0
-      usage[date]['0'] += 1
+updateRegisterDate = (accounts) ->
+  for account in accounts
+    user = account.local.email
+    users_summary[user] ?= {}
+    users_summary[user]['registerdate'] = moment(account.signup.registerDate.getTime()).tz('Asia/Shanghai').format()[0..9]
   return
 
 
-updateRegisterDate = (newusers) ->
-  for user in newusers
-    if users_summary.hasOwnProperty(user.local.email)
-      users_summary[user.local.email]['registerdate'] = moment(user.signup.registerDate.getTime()).tz('Asia/Shanghai').format()[0..9]
-  return        
+updateInactiveUser = (accounts) ->
+  accounts.sort (a,b) ->
+    new Date(a.signup.registerDate) - new Date(b.signup.registerDate)
+  for account in accounts
+    user = account.local.email
+    if not users.hasOwnProperty(user)
+      users[user] = {}
+      date = getConnectionDates(account.signup.registerDate, account.signup.registerDate)
+      usage[date] ?= {}
+      usage[date]['0'] ?= 0
+      usage[date]['0'] += 1
+      users_summary[user]['count'] = 0
+      users_summary[user]['sent'] = 0
+      users_summary[user]['received'] = 0
+      users_summary[user]['total'] = 0
+      users_summary[user]['totaltime'] = 0
+  return
 
 
 exports.users = users

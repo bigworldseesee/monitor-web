@@ -56,14 +56,14 @@ router.use (req, res, next) ->
 
 # Always update the gobal variables first upon request
 router.use (req, res, next) ->
-  User = dbRegister.model('User');
-  User.find {
+  Account = dbRegister.model('User');
+  Account.find {
     "signup.registerDate" :
       "$gte" : lastcheck
-  }, (err, newusers) =>
+  }, (err, accounts) =>
     throw err if err
-    cache.updateRegisterDate newusers
-    cache.updateInactiveUser newusers
+    cache.updateRegisterDate accounts
+    cache.updateInactiveUser accounts
     lastcheck = new Date()
     next()
 
