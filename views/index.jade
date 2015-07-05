@@ -46,7 +46,7 @@ block content
           br/
           | #{sprintf(format, session.duration / 60)}分钟 ----- 
           | Sent #{sprintf(format, session.sent/1024/1024)}M ----- 
-          | Received #{sprintf(format, session.sent/1024/1024)}M
+          | Received #{sprintf(format, session.received/1024/1024)}M
 
 
   script(type="text/javascript", src="/javascripts/usage_chart.js")
