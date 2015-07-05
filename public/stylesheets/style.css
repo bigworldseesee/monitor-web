@@ -2,75 +2,18 @@ body {
   background-color: #f5ecec;
   padding: 50px;
   font: 14px "Lucida Grande";
+  overflow-x:scroll;
 }
 
 a {
   color: #00b7ff;
 }
+
 .noDisplay{
     display: none;
 }
 
-#username {
-    font-size: 15px;
-    margin-left: 20px;
-    height: 50px;
-}
-
-
-/** initial setup **/
-.nano {
-  background-color: rgba(184, 207, 221, 0.8);
-  position : relative;
-  width    : 800px;
-  height   : 800px;
-  overflow : hidden;
-}
-.nano > .nano-content {
-  position      : absolute;
-  overflow      : scroll;
-  overflow-x    : hidden;
-  top           : 0;
-  right         : 0;
-  bottom        : 0;
-  left          : 30px;
-}
-.nano > .nano-content:focus {
-  outline: thin dotted;
-}
-.nano > .nano-content::-webkit-scrollbar {
-  display: none;
-}
-.has-scrollbar > .nano-content::-webkit-scrollbar {
-  display: block;
-}
-.nano > .nano-pane {
-  background : rgba(0,0,0,.25);
-  position   : absolute;
-  width      : 10px;
-  right      : 0;
-  top        : 0;
-  bottom     : 0;
-  visibility : hidden\9; /* Target only IE7 and IE8 with this hack */
-  opacity    : .01;
-  -webkit-transition    : .2s;
-  -moz-transition       : .2s;
-  -o-transition         : .2s;
-  transition            : .2s;
-  -moz-border-radius    : 5px;
-  -webkit-border-radius : 5px;
-  border-radius         : 5px;
-}
-.nano > .nano-pane > .nano-slider {
-  background: #444;
-  background: rgba(0,0,0,.5);
-  position              : relative;
-  margin                : 0 1px;
-  -moz-border-radius    : 3px;
-  -webkit-border-radius : 3px;
-  border-radius         : 3px;
-}
-.nano:hover > .nano-pane, .nano-pane.active, .nano-pane.flashed {
-  visibility : visible\9; /* Target only IE7 and IE8 with this hack */
-  opacity    : 0.99;
+#page-wrap {
+     width: 1000px;
+     margin: 0 auto;
 }

@@ -1,55 +1,57 @@
 extends layout
 
 block content
+  #page-wrap
 
-  #data
-    #usage.noDisplay
-      | !{JSON.stringify(usage)}
-
-
-  h1 Usage Statistics
-  #usage_chart
+    #data
+      #usage.noDisplay
+        | !{JSON.stringify(usage)}
 
 
-  h1 Users
-  table#users.display.compact(cellspacing='0', width='80%', cellpadding="0", border="0")
-    thead
-      tr
-        th UserName
-        th Registration
-        th Connection Times
-        th Total Time(Hour)
-        th Total Received(Mb)
-        th Total Sent(Mb)
-    tbody
-      -each info, user in users_summary
+    h1(align="center") Usage Statistics
+    #usage_chart
+
+
+    h1(align="center") Users
+    table#users.display.compact(cellspacing='0', width='100%', cellpadding="0", border="0")
+      thead
         tr
-          td #{user}
-          td #{info.registerdate}
-          td #{info.count}
-          td #{sprintf(format, info.totaltime/60/60)}
-          td #{sprintf(format, info.received/1024/1024)}
-          td #{sprintf(format, info.sent/1024/1024)}
+          th UserName
+          th Registration
+          th Connection Times
+          th Total Time(Hour)
+          th Total Received(Mb)
+          th Total Sent(Mb)
+      tbody
+        -each info, user in users_summary
+          tr
+            td #{user}
+            td #{info.registerdate}
+            td #{info.count}
+            td #{sprintf(format, info.totaltime/60/60)}
+            td #{sprintf(format, info.received/1024/1024)}
+            td #{sprintf(format, info.sent/1024/1024)}
 
-  h1 Recent Sessions
-  table#sessions.display.compact(cellspacing='0', width='80%', cellpadding="0", border="0")
-    thead
-      tr
-        th Date
-        th Time
-        th Username
-        th Duration(Min)
-        th Received(Mb)
-        th Sent(Mb)
-    tbody
-      -each session in recentSession
+    h1(align="center") Recent Sessions
+    h3(align="center") Current Time #{currentTime}
+    table#sessions.display.compact(cellspacing='0', width='100%', cellpadding="0", border="0")
+      thead
         tr
-          td #{session.start.slice(0, 10)}
-          td #{session.start.slice(10)} to #{session.end.slice(10)}
-          td #{session.username}
-          td #{sprintf(format, session.duration/60)}
-          td #{sprintf(format, session.received/1024/1024)}
-          td #{sprintf(format, session.sent/1024/1024)}
+          th Date
+          th Time
+          th Username
+          th Duration(Min)
+          th Received(Mb)
+          th Sent(Mb)
+      tbody
+        -each session in recentSession
+          tr
+            td #{session.start.slice(0, 10)}
+            td #{session.start.slice(10)} to #{session.end.slice(10)}
+            td #{session.username}
+            td #{sprintf(format, session.duration/60)}
+            td #{sprintf(format, session.received/1024/1024)}
+            td #{sprintf(format, session.sent/1024/1024)}
 
 
   script(type="text/javascript", src="/javascripts/usage_chart.js")

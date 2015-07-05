@@ -76,6 +76,7 @@ router.get '/', (req, res) ->
       timeseries : cache.timeseries
       usage: cache.usage
       recentSession: recentSession
+      currentTime: moment(new Date()).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
 
 
 module.exports = router
