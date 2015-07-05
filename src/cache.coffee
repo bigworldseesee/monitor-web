@@ -8,7 +8,6 @@ users = {}
 users_summary = {}
 timeseries = {}
 usage = {}
-recent = []
 check_by_day = false
 
 
@@ -154,7 +153,6 @@ exports.users = users
 exports.users_summary = users_summary
 exports.timeseries = timeseries
 exports.usage = usage
-exports.recent = recent
 exports.check_by_day = check_by_day
 exports.getConnectionDates = getConnectionDates 
 exports.getDurationPercentage = getDurationPercentage

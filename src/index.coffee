@@ -8,6 +8,7 @@ db = require '../model/db'
 Session = db.Session
 User = db.User
 lastcheck = 0
+recentSession = []
 
 router = express.Router()
 
@@ -35,9 +36,9 @@ router.use (req, res, next) ->
 
     # Update recent sessions, users and timeseries 
     for session in sessions
-      if cache.recent.length is 50
-        cache.recent.pop()
-      cache.recent.unshift {
+      if recentSession.length is 100
+        recentSession.pop()
+      recentSession.unshift {
         'username' : session.username
         'start': moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
         'end': moment(session.end).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
@@ -74,7 +75,7 @@ router.get '/', (req, res) ->
       users_summary : cache.users_summary
       timeseries : cache.timeseries
       usage: cache.usage
-      recent: cache.recent
+      recentSession: recentSession
 
 
 module.exports = router
