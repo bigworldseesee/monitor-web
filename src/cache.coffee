@@ -40,112 +40,117 @@ getDurationPercentage = (utcStart, utcEnd) ->
       result.push remaining/totalDuration
       return result
 
+###
+Becareful, there are some users that didn't register. Need to check this in other functions.
+Each time a new request coming in, this function gets run first.
+This will ensure all newly registered users get initialized.
+And before knowing further information, this user is a 0 time user
+###
+initUser = (accounts) ->
+  for account in accounts
+    user = account.local.email
+    date = account.signup.registerDate
+    dateKey = moment(date.getTime()).tz('Asia/Shanghai').format()[0..9]
+    # First time see this user, put it into users
+    users[user] = {}
+    # First time see this user, init users_summary
+    users_summary[user] =
+      'registerdate': dateKey
+      'totaltime': 0
+      'sent': 0
+      'received': 0
+      'count': 0
+    # Init usage if that date if not done so.
+    # This will ensure the session of a user always see a initialized usage[date].
+    # (Well, there are some unregistered users, so still need to check 'undefined', hmmmm)
+    # (TODO) manually populate the 4 unregistered users.
+    usage[dateKey] ?=
+      '0': 0
+      '1': 0
+      '2': 0
+      '3': 0
+      '4': 0
+      '5': 0  # This is 5 and above
+    # Of course you used 0 time, as I haven't seen your session
+    usage[dateKey]['0'] += 1
+  return
 
+# Add this session to the users[user] information
 updateUsers = (date, session, ratio) ->
-  # Update information for the user
   user = session.username
+  # Update information for users
   users[user] ?= {}
-  if not users_summary[user]
-    users_summary[user] = {}
-    users_summary[user]['totaltime'] = 0
-    users_summary[user]['sent'] = 0
-    users_summary[user]['received'] = 0
-    users_summary[user]['count'] ?= 0
-  if not users[user][date]
-    users[user][date] = {}
-    users[user][date]['received'] = 0
-    users[user][date]['sent'] = 0
-    users[user][date]['totaltime'] = 0
-  
-  users[user][date]['received'] += (session.received ? 0) * ratio
-  users[user][date]['sent'] += (session.sent ? 0) * ratio
+  users[user][date] ?=
+    'totaltime': 0
+    'sent': 0
+    'received': 0
+    'count': 0
   users[user][date]['totaltime'] += session.duration * ratio
-  users_summary[user]['count'] += 1
-  users_summary[user]['received'] += (session.received ? 0) * ratio
-  users_summary[user]['sent'] += (session.sent ? 0) * ratio
+  users[user][date]['sent'] += (session.sent ? 0) * ratio
+  users[user][date]['received'] += (session.received ? 0) * ratio
+  users[user][date]['count'] += 1
+  # Update information of users_summary
+  # This check could gone if all users are registered
+  users_summary[user] ?=
+    'totaltime': 0
+    'sent': 0
+    'received': 0
+    'count': 0
   users_summary[user]['totaltime'] += session.duration * ratio
-
+  users_summary[user]['sent'] += (session.sent ? 0) * ratio
+  users_summary[user]['received'] += (session.received ? 0) * ratio
+  users_summary[user]['count'] += 1
   return
 
 
 updateUsage = (date, session) ->
   user = session.username
-  usage[date] ?= {}
-  if check_by_day 
-    if users[user][date]['count'] is 1
-      num_days_login = Object.keys(users[user]).length
-      if num_days_login is 1
-        usage[date]['1'] ?= 0
-        usage[date]['1'] += 1
-      else if num_days_login < 5
-        usage[date][num_days_login.toString()] ?= 0
-        usage[date][num_days_login.toString()] += 1
-        usage[date][(num_days_login-1).toString()] ?= 0
-        usage[date][(num_days_login-1).toString()] -= 1
-      else if num_days_login is 5
-        usage[date]['4'] ?= 0
-        usage[date]['4'] -= 1
-        usage[date]['>4'] ?= 0
-        usage[date]['>4'] += 1
+  usage[date] ?=
+    '0': 0
+    '1': 0
+    '2': 0
+    '3': 0
+    '4': 0
+    '5': 0
+  # Unregistered users never got initalize in initUser, do it here.
+  if not users_summary[user]['registerdate'] and users_summary[user]['count'] is 1
+    usage[date]['0'] += 1
+
+  # We could count the user usage by how many times or how many days they login.
+  # If count by days and it's not the first time login today, we can return now.
+  if check_by_day and users[user][date]['count'] isnt 1
+    return
+
+  if check_by_day and users[user][date]['count'] is 1
+    # First time login today, check how many days hav loggedin
+    count = Object.keys(users[user]).length
   else
+    # Count by login times
     count = users_summary[user]['count']
-    if count is 1
-      usage[date]['1'] ?= 0
-      usage[date]['1'] += 1
-    else if count < 5
-      usage[date][count.toString()] ?= 0
-      usage[date][count.toString()] += 1
-      usage[date][(count-1).toString()] ?= 0
+    if count < 5
       usage[date][(count-1).toString()] -= 1
+      usage[date][count.toString()] += 1
     else if count is 5
-      usage[date]['4'] ?= 0
       usage[date]['4'] -= 1
-      usage[date]['>4'] ?= 0
-      usage[date]['>4'] += 1
+      usage[date]['5'] += 1
   return
 
 
 updateTimeSeries = (date, session, ratio) ->
   # Update information for the time series
-  timeseries[date] ?= {}
-  timeseries[date]['count'] ?= 0
-  timeseries[date]['received'] ?= 0
-  timeseries[date]['sent'] ?= 0
-  timeseries[date]['totaltime'] ?= 0
-  timeseries[date]['users'] ?= []
+  username = session.username
+  timeseries[date] ?=
+    'totaltime': 0
+    'sent': 0
+    'received': 0
+    'count': 0
+    'users': []
   timeseries[date]['count'] += 1
   timeseries[date]['received'] += (session.received ? 0) * ratio
   timeseries[date]['sent'] += (session.sent ? 0) * ratio
   timeseries[date]['totaltime'] += session.duration * ratio
-  if session.username not in timeseries[date]['users']
-    timeseries[date]['users'].push session.username
-  return
-
-
-updateRegisterDate = (accounts) ->
-  for account in accounts
-    user = account.local.email
-    users_summary[user] ?= {}
-    users_summary[user]['registerdate'] = moment(account.signup.registerDate.getTime()).tz('Asia/Shanghai').format()[0..9]
-  return
-
-
-updateInactiveUser = (accounts) ->
-  accounts.sort (a,b) ->
-    new Date(a.signup.registerDate) - new Date(b.signup.registerDate)
-  for account in accounts
-    user = account.local.email
-    if not users.hasOwnProperty(user)
-      users[user] = {}
-      date = getConnectionDates(account.signup.registerDate, account.signup.registerDate)
-      usage[date] ?= {}
-      usage[date]['0'] ?= 0
-      usage[date]['0'] += 1
-      users_summary[user]['count'] = 0
-      users_summary[user]['sent'] = 0
-      users_summary[user]['received'] = 0
-      users_summary[user]['total'] = 0
-      users_summary[user]['totaltime'] = 0
+  if username not in timeseries[date]['users']
+    timeseries[date]['users'].push username
   return
 
 
@@ -153,11 +158,9 @@ exports.users = users
 exports.users_summary = users_summary
 exports.timeseries = timeseries
 exports.usage = usage
-exports.check_by_day = check_by_day
 exports.getConnectionDates = getConnectionDates 
 exports.getDurationPercentage = getDurationPercentage
 exports.updateTimeSeries = updateTimeSeries
 exports.updateUsers = updateUsers
 exports.updateUsage = updateUsage
-exports.updateInactiveUser = updateInactiveUser
-exports.updateRegisterDate = updateRegisterDate
+exports.initUser = initUser

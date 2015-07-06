@@ -4,22 +4,24 @@ block content
   #page-wrap
 
     #data
-      #usage.noDisplay
-        | !{JSON.stringify(usage)}
+      #all-usage.noDisplay
+        | !{JSON.stringify(allUsage)}
+      #all-dates.noDisplay
+        | !{JSON.stringify(allDates)}
 
 
     h1(align="center") Usage Statistics
-    #usage_chart
+    #usage-chart
 
 
     h1(align="center") Users
     table#users.display.compact(cellspacing='0', width='100%', cellpadding="0", border="0")
       thead
         tr
-          th UserName
-          th Registration
-          th Connection Times
-          th Total Time(Hour)
+          th Username
+          th Register Date
+          th Number of connection
+          th Total Time(hour)
           th Total Received(Mb)
           th Total Sent(Mb)
       tbody
@@ -28,9 +30,9 @@ block content
             td #{user}
             td #{info.registerdate}
             td #{info.count}
-            td #{sprintf(format, info.totaltime/60/60)}
-            td #{sprintf(format, info.received/1024/1024)}
-            td #{sprintf(format, info.sent/1024/1024)}
+            td #{sprintf('%1.2f', info.totaltime/60/60)}
+            td #{sprintf('%1.1f', info.received/1024/1024)}
+            td #{sprintf('%1.1f', info.sent/1024/1024)}
 
     h1(align="center") Recent Sessions
     h3(align="center") Current Time #{currentTime}
@@ -40,7 +42,7 @@ block content
           th Date
           th Time
           th Username
-          th Duration(Min)
+          th Duration(min)
           th Received(Mb)
           th Sent(Mb)
       tbody
@@ -49,9 +51,9 @@ block content
             td #{session.start.slice(0, 10)}
             td #{session.start.slice(10)} to #{session.end.slice(10)}
             td #{session.username}
-            td #{sprintf(format, session.duration/60)}
-            td #{sprintf(format, session.received/1024/1024)}
-            td #{sprintf(format, session.sent/1024/1024)}
+            td #{sprintf('%1.1f', session.duration/60)}
+            td #{sprintf('%1.1f', session.received/1024/1024)}
+            td #{sprintf('%1.1f', session.sent/1024/1024)}
 
 
   script(type="text/javascript", src="/javascripts/usage_chart.js")

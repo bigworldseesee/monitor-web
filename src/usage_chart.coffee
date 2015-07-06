@@ -1,61 +1,46 @@
 # usage_chart.coffee
 
-unit = 'time'
+allUsage = JSON.parse($('#all-usage').text())
+allDates = JSON.parse($('#all-dates').text())
 
-usage = JSON.parse($('#usage').text())
-dates = []
-count_0 = [0]
-count_1 = [0]
-count_2 = [0]
-count_3 = [0]
-count_4 = [0]
-count_5_and_above = [0]
+groupName = [
+      '0 time'
+      '1 time'
+      '2 times'
+      '3 times'
+      '4 times'
+      '5 times and above'
+    ] 
 
-for date of usage
-  dates.push date.slice(5)
-  count_0.push count_0[count_0.length-1] + (usage[date]['0'] ? 0)
-  count_1.push count_1[count_1.length-1] + (usage[date]['1'] ? 0)
-  count_2.push count_2[count_2.length-1] + (usage[date]['2'] ? 0)
-  count_3.push count_3[count_3.length-1] + (usage[date]['3'] ? 0)
-  count_4.push count_4[count_4.length-1] + (usage[date]['4'] ? 0)
-  count_5_and_above.push  count_5_and_above[count_5_and_above.length-1] + (usage[date]['>4'] ? 0)
+allUsage[0].unshift(groupName[0])
+allUsage[1].unshift(groupName[1])
+allUsage[2].unshift(groupName[2])
+allUsage[3].unshift(groupName[3])
+allUsage[4].unshift(groupName[4])
+allUsage[5].unshift(groupName[5])
 
-count_0[0] = ['0 ' + unit]
-count_1[0] = ['1 ' + unit]
-count_2[0] = ['2 ' + unit]
-count_3[0] = ['3 ' + unit]
-count_4[0] = ['4 ' + unit]
-count_5_and_above[0] = ['5 and above']
-
-
-usage-chart = c3.generate(
-  bindto: '#usage_chart'
+n = 2
+usagechart = c3.generate(
+  bindto: '#usage-chart'
   data:
     columns: [
-      count_0
-      count_1
-      count_2
-      count_3
-      count_4
-      count_5_and_above
+      (x for x in allUsage[0] by n)
+      (x for x in allUsage[1] by n)
+      (x for x in allUsage[2] by n)
+      (x for x in allUsage[3] by n)
+      (x for x in allUsage[4] by n)
+      (x for x in allUsage[5] by n)
     ]
     type: 'bar'
     order: null
-    groups: [ [
-      '0 ' + unit
-      '1 ' + unit
-      '2 ' + unit
-      '3 ' + unit
-      '4 ' + unit
-      '5 and above'
-    ] ]
+    groups: [ groupName ]
   axis:
     x:
       tick:
         centered: true
         label: 'Date'
       type: 'category'
-      categories: dates
+      categories: (x[-5..] for x in allDates by n)
     y: {}
   grid: y: lines: [ { value: 0 } ]
   legend: position: 'right')

@@ -9,17 +9,22 @@ Session = db.Session
 User = db.User
 lastcheck = 0
 recentSession = []
+allDates = []
+allUsage = [[0], [0], [0], [0], [0], [0]]
+
 
 router = express.Router()
 
-prettyDate = (date) ->
-  d = date.getDate()
-  monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  m = date.getMonth()
-  y = date.getFullYear()
-  h = date.getHours()
-  min = date.getMinutes()
-  [y, m, d].join('-') + ' ' + h + ':' + min
+# Always update the gobal variables first upon request
+router.use (req, res, next) ->
+  Account = dbRegister.model('User');
+  Account.find {
+    "signup.registerDate" :
+      "$gte" : lastcheck
+  }, (err, accounts) =>
+    throw err if err
+    cache.initUser accounts
+    next()
 
 
 # Always update the gobal variables first upon request
@@ -36,6 +41,7 @@ router.use (req, res, next) ->
 
     # Update recent sessions, users and timeseries 
     for session in sessions
+      # Update recent sessions
       if recentSession.length is 100
         recentSession.pop()
       recentSession.unshift {
@@ -46,25 +52,30 @@ router.use (req, res, next) ->
         'sent': session.sent
         'received': session.received
       }
+
+      # Update users, usage, timeseries 
       dates = cache.getConnectionDates session.start, session.end
+      # (TODO) check if bug here for ratio.
       ratios = cache.getDurationPercentage session.start, session.end
       for date, i in dates
         cache.updateUsers date, session, ratios[i]
         cache.updateUsage date, session  # updateUsage() has to run after updateUsers()
         cache.updateTimeSeries date, session, ratios[i]
-    next()
+        if date not in allDates
+          allDates.push date
 
+    # allUsage[0..length-2] are already fixed, no need to update, but need to update allUsage[-1]
+    # u0  u1  u2  u3  u4
+    # d0  d1  d2  d3  d4  d5  d6
+    len1 = allUsage[0].length
+    len2 = allDates.length
+    for i in [0..5]
+      allUsage[i][len1-1] = cache.usage[allDates[len1-1]][i.toString()]
+      for j in [len1..len2-1] by 1
+        allUsage[i].push cache.usage[allDates[j]][i.toString()]
+      for j in [len1-1..len2-1] by 1
+        allUsage[i][j] += allUsage[i][j-1] ? 0
 
-# Always update the gobal variables first upon request
-router.use (req, res, next) ->
-  Account = dbRegister.model('User');
-  Account.find {
-    "signup.registerDate" :
-      "$gte" : lastcheck
-  }, (err, accounts) =>
-    throw err if err
-    cache.updateRegisterDate accounts
-    cache.updateInactiveUser accounts
     lastcheck = new Date()
     next()
 
@@ -74,9 +85,10 @@ router.get '/', (req, res) ->
       title : 'Daily active users'
       users_summary : cache.users_summary
       timeseries : cache.timeseries
-      usage: cache.usage
-      recentSession: recentSession
-      currentTime: moment(new Date()).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
+      allUsage : allUsage
+      allDates : allDates
+      recentSession : recentSession
+      currentTime : moment(new Date()).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
 
 
 module.exports = router
