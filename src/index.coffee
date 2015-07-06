@@ -12,7 +12,6 @@ recentSession = []
 allDates = []
 allUsage = [[0], [0], [0], [0], [0], [0]]
 
-
 router = express.Router()
 
 # Always update the gobal variables first upon request
@@ -31,7 +30,7 @@ router.use (req, res, next) ->
 router.use (req, res, next) ->
   Session = dbMonitor.model('Session');
   Session.find {
-    "start" :
+    "end" :
       "$gte" : lastcheck
     "active" : false
   }, (err, sessions) =>

@@ -19,7 +19,7 @@ allUsage[3].unshift(groupName[3])
 allUsage[4].unshift(groupName[4])
 allUsage[5].unshift(groupName[5])
 
-n = 2
+n = 1
 usagechart = c3.generate(
   bindto: '#usage-chart'
   data:
