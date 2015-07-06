@@ -37,21 +37,30 @@ router.use (req, res, next) ->
     throw err if err
     sessions.sort (a,b) ->
       new Date(a.start) - new Date(b.start)
-
     # Update recent sessions, users and timeseries 
     for session in sessions
       # Update recent sessions
-      if recentSession.length is 100
-        recentSession.pop()
-      recentSession.unshift {
-        'username' : session.username
-        'start': moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
-        'end': moment(session.end).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
-        'duration': session.duration
-        'sent': session.sent
-        'received': session.received
-      }
-
+      start_key = moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
+      end_key = moment(session.end).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
+      for s, i in recentSession[recentSession-1..0] by -1
+        s = recentSession[i]
+        if not s['end'] and s['id'] is session.id and s['username'] is session.username and s['start'] is start_key
+          recentSession[i]['end'] = end_key
+          recentSession[i]['duration'] = session.duration
+          recentSession[i]['sent'] = session.sent
+          recentSession[i]['received'] = session.received
+          break
+      if i is -1
+        recentSession.pop() if recentSession.length is 100
+        recentSession.unshift {
+          'id' : session.id
+          'username' : session.username
+          'start': start_key
+          'end': end_key
+          'duration': session.duration
+          'sent': session.sent
+          'received': session.received
+        }
       # Update users, usage, timeseries 
       dates = cache.getConnectionDates session.start, session.end
       # (TODO) check if bug here for ratio.
@@ -62,7 +71,6 @@ router.use (req, res, next) ->
         cache.updateTimeSeries date, session, ratios[i]
         if date not in allDates
           allDates.push date
-
     # allUsage[0..length-2] are already fixed, no need to update, but need to update allUsage[-1]
     # u0  u1  u2  u3  u4
     # d0  d1  d2  d3  d4  d5  d6
@@ -74,7 +82,28 @@ router.use (req, res, next) ->
         allUsage[i].push cache.usage[allDates[j]][i.toString()]
       for j in [len1-1..len2-1] by 1
         allUsage[i][j] += allUsage[i][j-1] ? 0
+    next()
 
+
+# Get currently login user
+router.use (req, res, next) ->
+  Session = dbMonitor.model('Session');
+  Session.find {
+    "start" :
+      "$gte" : lastcheck
+    "active" : true
+  }, (err, sessions) =>
+    throw err if err
+    sessions.sort (a,b) ->
+      new Date(a.start) - new Date(b.start)
+    for session in sessions
+      if recentSession.length is 100
+        recentSession.pop()
+      recentSession.unshift {
+        'id' : session.id
+        'username' : session.username
+        'start': moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
+      }
     lastcheck = new Date()
     next()
 

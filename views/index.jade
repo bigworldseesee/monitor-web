@@ -49,22 +49,30 @@ block content
         -each session in recentSession
           tr
             td #{session.start.slice(0, 10)}
-            td #{session.start.slice(10)} to #{session.end.slice(10)}
+            -if (typeof session.end != 'undefined')
+              td #{session.start.slice(10)} to #{session.end.slice(10)}
+            -else
+              td #{session.start.slice(10)} to NOW
             td #{session.username}
-            td #{sprintf('%1.1f', session.duration/60)}
-            td #{sprintf('%1.1f', session.received/1024/1024)}
-            td #{sprintf('%1.1f', session.sent/1024/1024)}
+            -if (typeof session.duration != 'undefined')
+              td #{sprintf('%1.1f', session.duration/60)}
+              td #{sprintf('%1.1f', session.received/1024/1024)}
+              td #{sprintf('%1.1f', session.sent/1024/1024)}
+            -else
+              td &nbsp;
+              td &nbsp;
+              td &nbsp;
 
 
   script(type="text/javascript", src="/javascripts/usage_chart.js")
   script.
     $(document).ready(function() {
       $('#users').DataTable({
-        "iDisplayLength": 25,
+        "iDisplayLength": 15,
         "order":[[1, "desc"]]
       });
       $('#sessions').DataTable({
-        "iDisplayLength": 25,
+        "iDisplayLength": 15,
         "order":[[0, "desc"]]
       });
 
