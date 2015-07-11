@@ -11,11 +11,15 @@ lastcheck = 0
 recentSession = []
 allDates = []
 allUsage = [[0], [0], [0], [0], [0], [0]]
+updating = false
 
 router = express.Router()
 
 # Always update the gobal variables first upon request
 router.use (req, res, next) ->
+  if updating
+    showPage(res, res) # Cache data is updating, don't update here.
+  updating = true
   Account = dbRegister.model('User');
   Account.find {
     "signup.registerDate" :
@@ -84,7 +88,6 @@ router.use (req, res, next) ->
         allUsage[i][j] += allUsage[i][j-1] ? 0
     next()
 
-
 # Get currently login user
 router.use (req, res, next) ->
   Session = dbMonitor.model('Session');
@@ -105,10 +108,13 @@ router.use (req, res, next) ->
         'start': moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
       }
     lastcheck = new Date()
+    updating = false;
     next()
 
-
 router.get '/', (req, res) ->
+  showPage(req, res)
+
+showPage = (req, res) ->
     res.render 'index',
       title : 'Daily active users'
       users_summary : cache.users_summary
