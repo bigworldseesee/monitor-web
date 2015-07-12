@@ -46,15 +46,19 @@ router.use (req, res, next) ->
       # Update recent sessions
       start_key = moment(session.start).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
       end_key = moment(session.end).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')
-      for s, i in recentSession[recentSession-1..0] by -1
-        s = recentSession[i]
-        if not s['end'] and s['id'] is session.id and s['username'] is session.username and s['start'] is start_key
-          recentSession[i]['end'] = end_key
-          recentSession[i]['duration'] = session.duration
-          recentSession[i]['sent'] = session.sent
-          recentSession[i]['received'] = session.received
+      found = false
+      for s in recentSession
+        if s['start'] < start_key
           break
-      if i is -1
+        if not s['end'] and s['id'] is session.id and s['username'] is session.username and s['start'] is start_key
+          s['end'] = end_key
+          s['duration'] = session.duration
+          s['sent'] = session.sent
+          s['received'] = session.received
+          found = true
+          console.log "found"
+          break
+      if found is false
         recentSession.pop() if recentSession.length is 100
         recentSession.unshift {
           'id' : session.id
