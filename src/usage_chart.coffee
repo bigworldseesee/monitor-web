@@ -58,6 +58,7 @@ session = ['session count']
 weekUsers = {}
 weeks = ['weeks']
 previousMonday = '2015-5-11'
+previousDay = 0
 
 for date, info of timeSeries
   dates.push date
@@ -68,7 +69,7 @@ for date, info of timeSeries
   if (new Date(date)).getDay() is 1
     if date isnt previousMonday
       wau.push Object.keys(weekUsers).length
-      weeks.push previousMonday
+      weeks.push previousDay
       weekUsers = {}
     previousMonday = date
   for user in info['users']
@@ -76,7 +77,10 @@ for date, info of timeSeries
       weekUsers[user] += 1
     else
       weekUsers[user] = 1
+  previousDay = date
 
+wau.push Object.keys(weekUsers).length
+weeks.push date
 
 active_user_chart = c3.generate(
   bindto: '#active-user-chart'
