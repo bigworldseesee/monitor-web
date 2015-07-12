@@ -1,8 +1,8 @@
 # usage_chart.coffee
 
+# Plot the usage statistic chart
 allUsage = JSON.parse($('#all-usage').text())
 allDates = JSON.parse($('#all-dates').text())
-
 groupName = [
       '0 time'
       '1 time'
@@ -18,12 +18,15 @@ allUsage[2].unshift(groupName[2])
 allUsage[3].unshift(groupName[3])
 allUsage[4].unshift(groupName[4])
 allUsage[5].unshift(groupName[5])
+allDates.unshift('date')
 
 n = 1
 usagechart = c3.generate(
   bindto: '#usage-chart'
   data:
+    x: 'date'
     columns: [
+      allDates
       (x for x in allUsage[0] by n)
       (x for x in allUsage[1] by n)
       (x for x in allUsage[2] by n)
@@ -38,12 +41,56 @@ usagechart = c3.generate(
     x:
       tick:
         centered: true
-        label: 'Date'
-      type: 'category'
-      categories: (x[-5..] for x in allDates by n)
+      type: 'timeseries'
     y: {}
   grid: y: lines: [ { value: 0 } ]
-  legend: position: 'right')
+  legend: position: 'top'
+)
 
 
+# Plot the daily active user chart
+timeSeries = JSON.parse($('#time-series').text())
 
+dates = ['days']
+dau = ['daily active user']
+wau = ['weekly active user']
+session = ['session count']
+weekUsers = {}
+weeks = ['weeks']
+previousMonday = '2015-5-11'
+
+for date, info of timeSeries
+  dates.push date
+  dau.push info['users'].length
+  session.push info['count']
+
+  # Weekly active users
+  if (new Date(date)).getDay() is 1
+    if date isnt previousMonday
+      wau.push Object.keys(weekUsers).length
+      weeks.push previousMonday
+      weekUsers = {}
+    previousMonday = date
+  for user in info['users']
+    if user of weekUsers
+      weekUsers[user] += 1
+    else
+      weekUsers[user] = 1
+
+
+active_user_chart = c3.generate(
+  bindto: '#active-user-chart'
+  data:
+    xs:
+      'daily active user': 'days'
+      'weekly active user': 'weeks'
+    columns: [
+      dates
+      dau
+      weeks
+      wau
+    ]
+  axis:
+    x:
+      type: 'timeseries'
+)

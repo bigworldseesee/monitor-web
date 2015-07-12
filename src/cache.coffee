@@ -6,7 +6,7 @@ ONEDAY = 1000 * 60 * 60 * 24
 
 users = {}
 users_summary = {}
-timeseries = {}
+timeSeries = {}
 usage = {}
 check_by_day = false
 
@@ -139,24 +139,24 @@ updateUsage = (date, session) ->
 updateTimeSeries = (date, session, ratio) ->
   # Update information for the time series
   username = session.username
-  timeseries[date] ?=
+  timeSeries[date] ?=
     'totaltime': 0
     'sent': 0
     'received': 0
     'count': 0
     'users': []
-  timeseries[date]['count'] += 1
-  timeseries[date]['received'] += (session.received ? 0) * ratio
-  timeseries[date]['sent'] += (session.sent ? 0) * ratio
-  timeseries[date]['totaltime'] += session.duration * ratio
-  if username not in timeseries[date]['users']
-    timeseries[date]['users'].push username
+  timeSeries[date]['count'] += 1
+  timeSeries[date]['received'] += (session.received ? 0) * ratio
+  timeSeries[date]['sent'] += (session.sent ? 0) * ratio
+  timeSeries[date]['totaltime'] += session.duration * ratio
+  if username not in timeSeries[date]['users']
+    timeSeries[date]['users'].push username
   return
 
 
 exports.users = users
 exports.users_summary = users_summary
-exports.timeseries = timeseries
+exports.timeSeries = timeSeries
 exports.usage = usage
 exports.getConnectionDates = getConnectionDates 
 exports.getDurationPercentage = getDurationPercentage

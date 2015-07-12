@@ -118,7 +118,7 @@ showPage = (req, res) ->
     res.render 'index',
       title : 'Daily active users'
       users_summary : cache.users_summary
-      timeseries : cache.timeseries
+      timeSeries : cache.timeSeries
       allUsage : allUsage
       allDates : allDates
       recentSession : recentSession

@@ -8,10 +8,15 @@ block content
         | !{JSON.stringify(allUsage)}
       #all-dates.noDisplay
         | !{JSON.stringify(allDates)}
+      #time-series.noDisplay
+        | !{JSON.stringify(timeSeries)}
 
 
     h1(align="center") Usage Statistics
     #usage-chart
+
+    h1(align="center") Active Users
+    #active-user-chart
 
 
     h1(align="center") Users
