@@ -60,13 +60,19 @@ weeks = ['weeks']
 previousMonday = '2015-5-11'
 previousDay = 0
 
+# Need to determine the client timezone
+if new Date().getTimezoneOffset() > 240  # US
+  mondayIndex = 0
+else if new Date().getTimezoneOffset() < -420 # China
+  mondayIndex = 1
+
 for date, info of timeSeries
   dates.push date
   dau.push info['users'].length
   session.push info['count']
 
   # Weekly active users
-  if (new Date(date)).getDay() is 1
+  if (new Date(date)).getDay() is mondayIndex
     if date isnt previousMonday
       wau.push Object.keys(weekUsers).length
       weeks.push previousDay
