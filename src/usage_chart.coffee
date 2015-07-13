@@ -1,6 +1,6 @@
 # usage_chart.coffee
 
-ONDAY = 1000*60*60*24
+ONEDAY = 1000*60*60*24
 
 # Plot the usage statistic chart
 allUsage = JSON.parse($('#all-usage').text())
@@ -60,7 +60,7 @@ session = ['session count']
 weekUsers = {}
 weeks = ['weeks']
 thisMonday = new Date('2015-05-11')
-nextMonday = new Date(thisMonday.getTime() + ONDAY*7)
+nextMonday = new Date(thisMonday.getTime() + ONEDAY*7)
 
 # Need to determine the client timezone
 if new Date().getTimezoneOffset() > 240  # US
@@ -77,7 +77,7 @@ for date, info of timeSeries
   thisDate = new Date(date)
   if thisDate >= nextMonday
     thisMonday = nextMonday
-    nextMonday = new Date(thisMonday.getTime() + ONDAY*7)
+    nextMonday = new Date(thisMonday.getTime() + ONEDAY*7)
     wau.push Object.keys(weekUsers).length
     weeks.push (new Date(thisMonday.getTime() - ONEDAY)).toISOString()[0..9]
     weekUsers = {}
