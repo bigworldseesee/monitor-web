@@ -120,7 +120,7 @@ router.get '/', (req, res) ->
 
 showPage = (req, res) ->
     res.render 'index',
-      title : 'Daily active users'
+      title : 'Dashboard'
       users_summary : cache.users_summary
       timeSeries : cache.timeSeries
       allUsage : allUsage

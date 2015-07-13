@@ -17,6 +17,7 @@ config = require './config'
 
 app = express()
 
+app.use favicon(__dirname + '/public/images/favicon.ico')
 app.use express.static path.join(__dirname, 'public')
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -26,6 +27,7 @@ app.use logger('dev')
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use require('stylus').middleware(__dirname + '/public')
+
 
 app.locals.sprintf = require('sprintf').sprintf
 app.locals.moment = require 'moment-timezone'
