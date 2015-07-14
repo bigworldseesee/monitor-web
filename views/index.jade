@@ -25,6 +25,8 @@ block content
         tr
           th Username
           th Register Date
+          th Type
+          th OS
           th Number of connection
           th Total Time(hour)
           th Total Received(Mb)
@@ -32,12 +34,20 @@ block content
       tbody
         -each info, user in users_summary
           tr
-            td #{user}
-            td #{info.registerdate}
-            td #{info.count}
-            td #{sprintf('%1.2f', info.totaltime/60/60)}
-            td #{sprintf('%1.1f', info.received/1024/1024)}
-            td #{sprintf('%1.1f', info.sent/1024/1024)}
+            td(align="left") #{user}
+            td(align="center") #{info.registerdate}
+            -if(info.type < 2)
+              td(align="center") Web
+            -else
+              td(align="center") Client
+            -if(info.os)
+              td(align="center") #{info.os}
+            -else
+              td
+            td(align="center") #{info.count}
+            td(align="center") #{sprintf('%1.2f', info.totaltime/60/60)}
+            td(align="center") #{sprintf('%1.1f', info.received/1024/1024)}
+            td(align="center") #{sprintf('%1.1f', info.sent/1024/1024)}
 
     h1(align="center") Recent Sessions
     h3(align="center") Current Time #{currentTime}
@@ -60,9 +70,9 @@ block content
               td #{session.start.slice(10)} to NOW
             td #{session.username}
             -if (typeof session.duration != 'undefined')
-              td #{sprintf('%1.1f', session.duration/60)}
-              td #{sprintf('%1.1f', session.received/1024/1024)}
-              td #{sprintf('%1.1f', session.sent/1024/1024)}
+              td(align="center") #{sprintf('%1.1f', session.duration/60)}
+              td(align="center") #{sprintf('%1.1f', session.received/1024/1024)}
+              td(align="center") #{sprintf('%1.1f', session.sent/1024/1024)}
             -else
               td &nbsp;
               td &nbsp;

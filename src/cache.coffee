@@ -10,6 +10,11 @@ timeSeries = {}
 usage = {}
 check_by_day = false
 
+osMap =
+  1: 'Win'
+  2: 'Android'
+  3: 'iOS'
+  4: 'OSX'
 
 # Returns dates in China time.
 getConnectionDates = (utcStart, utcEnd) ->
@@ -51,11 +56,16 @@ initUser = (accounts) ->
     user = account.local.email
     date = account.signup.registerDate
     dateKey = moment(date.getTime()).tz('Asia/Shanghai').format()[0..9]
+    allOS = []
+    for os in account.attributes.OSId
+      allOS.push osMap[os]
     # First time see this user, put it into users
     users[user] = {}
     # First time see this user, init users_summary
     users_summary[user] =
       'registerdate': dateKey
+      'type' : account.attributes.groupId[0]
+      'os' : allOS
       'totaltime': 0
       'sent': 0
       'received': 0
