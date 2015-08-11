@@ -19,6 +19,7 @@ router = express.Router()
 router.use (req, res, next) ->
   if updating
     showPage(res, res) # Cache data is updating, don't update here.
+    return
   updating = true
   Account = dbRegister.model('User');
   Account.find {
