@@ -9,6 +9,7 @@ users_summary = {}
 timeSeries = {}
 usage = {}
 check_by_day = false
+user_number = 0
 
 osMap =
   1: 'Win'
@@ -52,7 +53,10 @@ This will ensure all newly registered users get initialized.
 And before knowing further information, this user is a 0 time user
 ###
 initUser = (accounts) ->
+  accounts.sort (a,b) ->
+    a.signup.registerDate - b.signup.registerDate
   for account in accounts
+    console.log(user)
     user = account.local.email
     date = account.signup.registerDate
     dateKey = moment(date.getTime()).tz('Asia/Shanghai').format()[0..9]
@@ -62,7 +66,9 @@ initUser = (accounts) ->
     # First time see this user, put it into users
     users[user] = {}
     # First time see this user, init users_summary
+    user_number += 1
     users_summary[user] =
+      'user_number': user_number
       'registerdate': dateKey
       'type' : account.attributes.groupId[0]
       'os' : allOS

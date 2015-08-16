@@ -24,6 +24,7 @@ block content
       thead
         tr
           th Username
+          th User #
           th Register Date
           th Type
           th OS
@@ -35,6 +36,7 @@ block content
         -each info, user in users_summary
           tr
             td(align="left") #{user}
+            td(align="left") #{info.user_number}
             td(align="center") #{info.registerdate}
             -if(info.type < 2)
               td(align="center") Web
